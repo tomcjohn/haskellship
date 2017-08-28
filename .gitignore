@@ -1,0 +1,13 @@
+# vi autosave files
+*.swp
+
+# emacs autosave files
+\#*
+.#*
+*~
+
+# idea project dir
+.idea
+
+# code tags files
+TAGS
