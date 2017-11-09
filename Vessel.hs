@@ -7,7 +7,7 @@ data Vessel = Carrier Orientation Position |
               Battleship Orientation Position |
               Cruiser Orientation Position |
               Submarine Orientation Position |
-              Destroyer Orientation Position
+              Destroyer Orientation Position deriving Show
 
 class WasHit a where
   wasHit :: a -> Position -> Bool

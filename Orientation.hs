@@ -1,3 +1,3 @@
 module Orientation where
 
-data Orientation = Vertical | Horizontal
+data Orientation = Vertical | Horizontal deriving Show
