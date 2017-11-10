@@ -1,5 +1,7 @@
 module Main where
 
+import Debug.Trace
+
 import GameBoard
 import Orientation
 import Position
@@ -18,5 +20,5 @@ main :: IO ()
 main = do
   putStrLn "Hello World!"
   let gb = createBoard
-  print gb
+  trace ("BACK IN MAIN") (print gb)
   putStrLn "done"
