@@ -1,20 +1,25 @@
 module GameBoard where
 
+import Data.Set (Set)
+import qualified Data.Set as Set
 --import Debug.Trace
 
 import Position
 import Orientation
 import Vessel
 
-data GameBoard = GameBoard Position Position [Vessel] [Position] deriving Show
+type HitSet = Set Position
+
+data PositionedVessel = PositionedVessel Vessel [Position] HitSet deriving Show
+data GameBoard = GameBoard Position Position [PositionedVessel] deriving Show
 
 -- assumes bottom left is 0,0
 makeBoard :: Position -> [Vessel] -> GameBoard
-makeBoard topRight vessels = GameBoard (Position 0 0) topRight vessels (allVesselPositions vessels)
+makeBoard topRight vessels = GameBoard (Position 0 0) topRight (allVesselPositions vessels)
 
-allVesselPositions :: [Vessel] -> [Position]
+allVesselPositions :: [Vessel] -> [PositionedVessel]
 allVesselPositions [] = []
-allVesselPositions (v:vs) = vesselPositions v (vesselLength v) ++ (allVesselPositions vs)
+allVesselPositions (v:vs) = (PositionedVessel v (vesselPositions v (vesselLength v)) Set.empty) : (allVesselPositions vs)
 
 vesselPositions :: Vessel -> Int -> [Position]
 vesselPositions (Carrier o p) l = allThePositions o p l
