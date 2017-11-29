@@ -1,7 +1,6 @@
 module Main where
 
 import Debug.Trace
-import Data.Set (Set)
 import qualified Data.Set as Set
 
 import GameBoard
@@ -26,8 +25,8 @@ playerTurn (GameBoard bottomLeft topRight pvs) shot = GameBoard bottomLeft topRi
 -- TODO not exhaustive on a positioned vessel's positions
 takeTheShot :: [PositionedVessel] -> Position -> [PositionedVessel]
 takeTheShot [] _ = []
-takeTheShot ((PositionedVessel v [] hits):pvs) _ = ((PositionedVessel v [] hits):pvs)
-takeTheShot ((PositionedVessel v positions hits):pvs) shot = (PositionedVessel v positions (calculateHit shot positions hits)) : (takeTheShot pvs shot)
+takeTheShot (PositionedVessel v [] hits:pvs) _ = (PositionedVessel v [] hits:pvs)
+takeTheShot (PositionedVessel v positions hits:pvs) shot = (PositionedVessel v positions (calculateHit shot positions hits)) : takeTheShot pvs shot
 
 calculateHit :: Position -> [Position] -> HitSet -> HitSet
 calculateHit shot positions hits =

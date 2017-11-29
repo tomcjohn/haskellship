@@ -27,5 +27,12 @@ instance WasHit Vessel where
   wasHit (Destroyer o p) shotPos = didItHit o p 3 shotPos
 
 didItHit :: Orientation -> Position -> Int -> Position -> Bool
-didItHit Vertical (Position x y) l (Position shotX shotY) = undefined
-didItHit Horizontal (Position x y) l (Position shotX shotY) = undefined
+didItHit o p l shot = elem shot (allPositions o p l)
+
+allPositions :: Orientation -> Position -> Int -> [Position]
+allPositions orient position len = doIt orient position len []
+  where doIt o p l acc = if l > 0 then (doIt o (posAdd o p 1) (l-1) (p:acc)) else p:acc
+
+posAdd :: Orientation -> Position -> Int -> Position
+posAdd Vertical (Position x y) l = Position x (y+l)
+posAdd Horizontal (Position x y) l = Position (x+l) y

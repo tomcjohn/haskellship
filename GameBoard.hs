@@ -19,7 +19,7 @@ makeBoard topRight vessels = GameBoard (Position 0 0) topRight (allVesselPositio
 
 allVesselPositions :: [Vessel] -> [PositionedVessel]
 allVesselPositions [] = []
-allVesselPositions (v:vs) = (PositionedVessel v (vesselPositions v (vesselLength v)) Set.empty) : (allVesselPositions vs)
+allVesselPositions (v:vs) = (PositionedVessel v (vesselPositions v (vesselLength v)) Set.empty) : allVesselPositions vs
 
 vesselPositions :: Vessel -> Int -> [Position]
 vesselPositions (Carrier o p) l = allThePositions o p l
@@ -34,8 +34,7 @@ allThePositions orient startPos len = doIt orient startPos len []
         doIt o p l acc = doIt o (advancePosition o p) (l-1) (acc ++ [p])
 
 advancePosition :: Orientation -> Position -> Position
-advancePosition Vertical (Position x y) = (Position x (y+1))
-advancePosition Horizontal (Position x y) = (Position (x+1) y)
+advancePosition o p = posAdd o p 1
 
 vesselLength :: Vessel -> Int
 vesselLength (Carrier _ _) = 5
