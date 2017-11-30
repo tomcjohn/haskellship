@@ -12,15 +12,15 @@ data Vessel = Carrier Orientation PosSet PosSet |
               Submarine Orientation PosSet PosSet |
               Destroyer Orientation PosSet PosSet deriving Show
 
-class HasSunk a where
-  hasSunk :: a -> Bool
+class IsSunk a where
+  isSunk :: a -> Bool
 
-instance HasSunk Vessel where
-  hasSunk (Carrier _ ps hs) = setEquals ps hs
-  hasSunk (Battleship _ ps hs) = setEquals ps hs
-  hasSunk (Cruiser _ ps hs) = setEquals ps hs
-  hasSunk (Submarine _ ps hs) = setEquals ps hs
-  hasSunk (Destroyer _ ps hs) = setEquals ps hs
+instance IsSunk Vessel where
+  isSunk (Carrier _ ps hs) = setEquals ps hs
+  isSunk (Battleship _ ps hs) = setEquals ps hs
+  isSunk (Cruiser _ ps hs) = setEquals ps hs
+  isSunk (Submarine _ ps hs) = setEquals ps hs
+  isSunk (Destroyer _ ps hs) = setEquals ps hs
 
 setEquals :: PosSet -> PosSet -> Bool
 setEquals ps hs = Set.null (Set.difference ps hs)
