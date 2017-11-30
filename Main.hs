@@ -7,13 +7,14 @@ import Vessel
 
 main :: IO ()
 main = do
-  putStrLn "Calculating board ..."
-  let newBoard = takeShot createBoard nextShot
+  putStrLn "Generating board ..."
+  let board = generateBoard
+  let newBoard = takeShot nextShot board
   print (gameOver newBoard)
   putStrLn "Game Over - You lose!"
 
-createBoard :: GameBoard
-createBoard = do
+generateBoard :: GameBoard
+generateBoard = do
   let carrier = buildCarrier Vertical (Position 0 2)
   let battleship = buildBattleship Horizontal (Position 4 1)
   let cruiser = buildCruiser Horizontal (Position 3 8)
