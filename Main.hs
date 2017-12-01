@@ -15,7 +15,6 @@ main = do
                Position 5 5,Position 6 5,Position 7 5,
                Position 4 4,Position 4 5]
   let finalBoard = runGame board shots
-  allBoardPositions finalBoard
   putStrLn "Game Over!"
   putStrLn ("All sunk = " ++ (show (gameOver finalBoard)))
 
