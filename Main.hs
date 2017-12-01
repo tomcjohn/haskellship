@@ -1,10 +1,12 @@
 module Main where
 
+import qualified Data.List.Split as S
 import GameBoard
 import Orientation
 import Position
 import Vessel
 
+-- TODO add random placement for vessels on the board
 generateBoard :: GameBoard
 generateBoard = do
   let carrier = buildCarrier Vertical (Position 0 2)
@@ -21,15 +23,22 @@ runGame board (p:ps) = do
   let newBoard = takeShot board p
   runGame newBoard ps
 
+strToPos :: String -> Position
+strToPos s = do
+  let splitPos = S.splitOn "," s
+  let x = read (splitPos!!0)
+  let y = read (splitPos!!1)
+  Position x y
+
+-- TODO accept user input from keyboard
+-- TODO provide a way of displaying the board at any point such that the user can decide where to shoot next
 main :: IO ()
 main = do
   putStrLn "Generating board ..."
   let board = generateBoard
-  let shots = [Position 0 2,Position 0 3,Position 0 4,Position 0 5,Position 0 6,
-               Position 4 1,Position 5 1,Position 6 1,Position 7 1,
-               Position 3 8,Position 4 8,Position 5 8,
-               Position 5 5,Position 6 5,Position 7 5,
-               Position 4 4,Position 4 5]
+  let filename = "shots-test.in"
+  content <- readFile filename
+  let shots = map strToPos (lines content)
   let finalBoard = runGame board shots
   putStrLn "Game Over!"
   putStrLn ("All sunk = " ++ (show (gameOver finalBoard)))
