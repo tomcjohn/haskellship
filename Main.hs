@@ -17,12 +17,6 @@ generateBoard = do
   let vessels = [carrier, battleship, cruiser, submarine, destroyer]
   GameBoard (Position 0 0) (Position 9 9) vessels
 
-runGame :: GameBoard -> [Position] -> GameBoard
-runGame b [] = b
-runGame board (p:ps) = do
-  let newBoard = takeShot board p
-  runGame newBoard ps
-
 strToPos :: String -> Position
 strToPos s = do
   let splitPos = S.splitOn "," s
@@ -30,15 +24,26 @@ strToPos s = do
   let y = read (splitPos!!1)
   Position x y
 
--- TODO accept user input from keyboard
+runGame :: GameBoard -> IO ()
+runGame board = do
+  putStrLn ("All sunk = " ++ (show (gameOver board)))
+  if gameOver board
+    then putStrLn "Game Over!"
+    else do
+      print board
+      putStr "Take a shot (x,y): "
+      line <- getLine
+      if null line
+        then return ()
+        else do
+          let shot = strToPos line
+          let newBoard = takeShot board shot
+          runGame newBoard
+
+-- TODO give user feedback on whether each shot was a hit or a miss
 -- TODO provide a way of displaying the board at any point such that the user can decide where to shoot next
 main :: IO ()
 main = do
   putStrLn "Generating board ..."
   let board = generateBoard
-  let filename = "shots-test.in"
-  content <- readFile filename
-  let shots = map strToPos (lines content)
-  let finalBoard = runGame board shots
-  putStrLn "Game Over!"
-  putStrLn ("All sunk = " ++ (show (gameOver finalBoard)))
+  runGame board
