@@ -7,7 +7,7 @@ import Position
 import Vessel
 
 -- TODO add random placement for vessels on the board
-generateBoard :: GameBoard
+generateBoard :: IO GameBoard
 generateBoard = do
   let carrier = buildCarrier Vertical (Position 0 2)
   let battleship = buildBattleship Horizontal (Position 4 1)
@@ -15,7 +15,7 @@ generateBoard = do
   let submarine = buildSubmarine Horizontal (Position 5 5)
   let destroyer = buildDestroyer Vertical (Position 4 4)
   let vessels = [carrier, battleship, cruiser, submarine, destroyer]
-  GameBoard (Position 0 0) (Position 9 9) vessels
+  pure (GameBoard (Position 0 0) (Position 9 9) vessels)
 
 strToPos :: String -> Position
 strToPos s = do
@@ -24,10 +24,13 @@ strToPos s = do
   let y = read (splitPos!!1)
   Position x y
 
-runGame :: GameBoard -> IO ()
-runGame board = do
-  putStrLn ("All sunk = " ++ (show (gameOver board)))
-  if gameOver board
+runGame :: IO GameBoard -> IO ()
+runGame ioBoard = do
+  board <- ioBoard
+  sunk <- gameOver board
+  putStrLn ("All sunk = " ++ (show sunk))
+  over <- gameOver board
+  if over
     then putStrLn "Game Over!"
     else do
       print board
@@ -40,7 +43,9 @@ runGame board = do
           let newBoard = takeShot board shot
           runGame newBoard
 
--- TODO give user feedback on whether each shot was a hit or a miss
+boardy :: GameBoard -> IO GameBoard
+boardy b = return b
+
 -- TODO provide a way of displaying the board at any point such that the user can decide where to shoot next
 main :: IO ()
 main = do
