@@ -27,6 +27,7 @@ strToPos s = do
 runGame :: IO GameBoard -> IO ()
 runGame ioBoard = do
   board <- ioBoard
+  printBoard board
   sunk <- gameOver board
   putStrLn ("All sunk = " ++ (show sunk))
   over <- gameOver board
