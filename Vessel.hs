@@ -27,6 +27,24 @@ nextPos :: Orientation -> Pos -> Pos
 nextPos Horizontal (x,y) = ((x+1), y)
 nextPos Vertical   (x,y) = (x, (y+1))
 
+didItHit :: [Vessel] -> Pos -> Bool
+didItHit [] _ = False
+didItHit (v:vs) shot = do
+  if isHit v shot
+    then True
+    else didItHit vs shot
+
+isHit :: Vessel -> Pos -> Bool
+isHit (Carrier _ ps) shot = elem shot ps
+isHit (Battleship _ ps) shot = elem shot ps
+isHit (Cruiser _ ps) shot = elem shot ps
+isHit (Submarine _ ps) shot = elem shot ps
+isHit (Destroyer _ ps) shot = elem shot ps
+
+allSunk :: [Vessel] -> [Pos] -> Bool
+allSunk [] _ = True
+allSunk (v:vs) hits = isSunk v hits && allSunk vs hits
+
 isSunk :: Vessel -> [Pos] -> Bool
 isSunk (Carrier _ ps) hs = contains ps hs
 isSunk (Battleship _ ps) hs = contains ps hs

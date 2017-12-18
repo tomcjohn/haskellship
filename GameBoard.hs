@@ -1,6 +1,5 @@
 module GameBoard where
 
-import Debug.Trace
 import Pos
 import Vessel
 
@@ -41,21 +40,24 @@ printSquare hits x y = do
   putStr " |"
 
 takeShot :: GameBoard -> Pos -> IO GameBoard
-takeShot (GameBoard p1 p2 afloat hits) shot = do
+takeShot (GameBoard p1 p2 vessels hits) shot = do
   if not $ onBoard p1 p2 shot
     then do
       putStrLn $ "Off board: " ++ (show shot)
-      pure $ GameBoard p1 p2 afloat hits
+      pure $ GameBoard p1 p2 vessels hits
     else do
-      putStrLn $ "Shot: " ++ (show shot)
-      -- TODO return a new GameBoard changed by the application of the shot!
-      putStrLn "NOTHING HAPPENED!!!"
-      pure $ GameBoard p1 p2 afloat hits
+      if didItHit vessels shot
+        then do
+          putStrLn "HIT!"
+          pure $ GameBoard p1 p2 vessels (shot:hits)
+        else do
+          putStrLn "MISS!"
+          pure $ GameBoard p1 p2 vessels hits
 
 onBoard :: Pos -> Pos -> Pos -> Bool
 onBoard (x1,y1) (x2,y2) (x,y) =
   x >= x1 && x <= x2 && y >= y1 && y <= y2
 
 gameOver :: GameBoard -> IO Bool
-gameOver (GameBoard _ _ afloat _) = do
-  pure $ null afloat
+gameOver (GameBoard _ _ vessels hits) = do
+  pure $ allSunk vessels hits

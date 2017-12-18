@@ -28,11 +28,11 @@ runGame :: IO GameBoard -> IO ()
 runGame ioBoard = do
   board <- ioBoard
   printBoard board
-  sunk <- gameOver board
-  putStrLn ("All sunk = " ++ (show sunk))
   over <- gameOver board
   if over
-    then putStrLn "Game Over!"
+    then do
+      putStrLn "Game Over"
+      putStrLn "YOU WIN!!!"
     else do
       print board
       putStr "Take a shot (x,y): "
@@ -44,10 +44,6 @@ runGame ioBoard = do
           let newBoard = takeShot board shot
           runGame newBoard
 
-boardy :: GameBoard -> IO GameBoard
-boardy b = return b
-
--- TODO provide a way of displaying the board at any point such that the user can decide where to shoot next
 main :: IO ()
 main = do
   putStrLn "Generating board ..."
