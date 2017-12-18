@@ -38,7 +38,7 @@ printSquare :: [Pos] -> Int -> Int -> IO ()
 printSquare hits x y = do
   putStr " "
   if elem (x,y) hits then putStr "X" else putStr "-"
-  putStr "|"
+  putStr " |"
 
 takeShot :: GameBoard -> Pos -> IO GameBoard
 takeShot (GameBoard p1 p2 afloat hits) shot = do
