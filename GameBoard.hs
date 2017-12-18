@@ -1,66 +1,61 @@
 module GameBoard where
 
-import Control.Monad
 import Debug.Trace
-import Position
+import Pos
 import Vessel
 
-data GameBoard = GameBoard Position Position [Vessel] deriving Show
+data GameBoard = GameBoard Pos Pos [Vessel] [Pos] deriving Show
 
 printBoard :: GameBoard -> IO ()
-printBoard (GameBoard (Position x1 y1) (Position x2 y2) vessels) = do
-  printRows [x1..x2] [y1..y2]
+printBoard (GameBoard (x1,y1) (x2,y2) _ hits) = do
+  printRows hits [x1..x2] [y1..y2]
   putStrLn "========================================="
 
-printRows :: [Int] -> [Int] -> IO ()
-printRows _ [] = do
+printRows :: [Pos] -> [Int] -> [Int] -> IO ()
+printRows _ [] _ = do
   pure ()
-printRows xs (y:ys) = do
+printRows _ _ [] = do
+  pure ()
+printRows hits xs (y:ys) = do
   putStrLn "========================================="
-  printRow y xs
-  printRows xs ys
+  printRow hits y xs
+  printRows hits xs ys
 
-printRow :: Int -> [Int] -> IO ()
-printRow y xs = do
+printRow :: [Pos] -> Int -> [Int] -> IO ()
+printRow hits y xs = do
   putStr "|"
-  printSquares y xs
+  printSquares hits y xs
   putStrLn ""
 
-printSquares :: Int -> [Int] -> IO ()
-printSquares _ [] = do
+printSquares :: [Pos] -> Int -> [Int] -> IO ()
+printSquares _ _ [] = do
   pure ()
-printSquares y (x:xs) = do
-  printSquare x y
-  printSquares y xs
+printSquares hits y (x:xs) = do
+  printSquare hits x y
+  printSquares hits y xs
 
-printSquare :: Int -> Int -> IO ()
-printSquare x y = putStr $ " - |"
+printSquare :: [Pos] -> Int -> Int -> IO ()
+printSquare hits x y = do
+  putStr " "
+  if elem (x,y) hits then putStr "X" else putStr "-"
+  putStr "|"
 
-takeShot :: GameBoard -> Position -> IO GameBoard
-takeShot (GameBoard p1 p2 vessels) shot = do
+takeShot :: GameBoard -> Pos -> IO GameBoard
+takeShot (GameBoard p1 p2 afloat hits) shot = do
   if not $ onBoard p1 p2 shot
     then do
       putStrLn $ "Off board: " ++ (show shot)
-      pure $ GameBoard p1 p2 vessels
+      pure $ GameBoard p1 p2 afloat hits
     else do
       putStrLn $ "Shot: " ++ (show shot)
-      pure $ GameBoard p1 p2 (shoot shot vessels)
-      where shoot _ [] = []
-            shoot p (v:vs) =
-              if vesselContains p v
-                then do
-                  trace "HIT!" addHit p v : vs
-                else do
-                  trace "Miss" v : shoot p vs
+      -- TODO return a new GameBoard changed by the application of the shot!
+      putStrLn "NOTHING HAPPENED!!!"
+      pure $ GameBoard p1 p2 afloat hits
 
-onBoard :: Position -> Position -> Position -> Bool
-onBoard (Position x1 y1) (Position x2 y2) (Position x y) =
+onBoard :: Pos -> Pos -> Pos -> Bool
+onBoard (x1,y1) (x2,y2) (x,y) =
   x >= x1 && x <= x2 && y >= y1 && y <= y2
 
 gameOver :: GameBoard -> IO Bool
-gameOver (GameBoard _ _ vessels) = do
-  pure $ allSunk vessels
-
-allSunk :: [Vessel] -> Bool
-allSunk [] = True
-allSunk (v:vs) = isSunk v && allSunk vs
+gameOver (GameBoard _ _ afloat _) = do
+  pure $ null afloat
