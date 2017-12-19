@@ -9,16 +9,16 @@ data Vessel = Carrier Orientation [Pos] |
               Submarine Orientation [Pos] |
               Destroyer Orientation [Pos] deriving Show
 
-buildCarrier :: Orientation -> Pos -> Vessel
-buildCarrier o p = Carrier o (listPositions o p 5)
-buildBattleship :: Orientation -> Pos -> Vessel
-buildBattleship o p = Battleship o (listPositions o p 4)
-buildCruiser :: Orientation -> Pos -> Vessel
-buildCruiser o p = Cruiser o (listPositions o p 3)
-buildSubmarine :: Orientation -> Pos -> Vessel
-buildSubmarine o p = Submarine o (listPositions o p 3)
-buildDestroyer :: Orientation -> Pos -> Vessel
-buildDestroyer o p = Destroyer o (listPositions o p 2)
+bldCarrier :: Orientation -> Pos -> Vessel
+bldCarrier o p = Carrier o (listPositions o p 5)
+bldBattleship :: Orientation -> Pos -> Vessel
+bldBattleship o p = Battleship o (listPositions o p 4)
+bldCruiser :: Orientation -> Pos -> Vessel
+bldCruiser o p = Cruiser o (listPositions o p 3)
+bldSubmarine :: Orientation -> Pos -> Vessel
+bldSubmarine o p = Submarine o (listPositions o p 3)
+bldDestroyer :: Orientation -> Pos -> Vessel
+bldDestroyer o p = Destroyer o (listPositions o p 2)
 
 listPositions :: Orientation -> Pos -> Int -> [Pos]
 listPositions o p l = if l > 0 then (p : (listPositions o (nextPos o p) (l-1))) else []

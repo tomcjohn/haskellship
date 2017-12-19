@@ -11,8 +11,6 @@ printBoard (GameBoard (x1,y1) (x2,y2) _ hits) = do
   putStrLn "========================================="
 
 printRows :: [Pos] -> [Int] -> [Int] -> IO ()
-printRows _ [] _ = do
-  pure ()
 printRows _ _ [] = do
   pure ()
 printRows hits xs (y:ys) = do
@@ -46,6 +44,7 @@ takeShot (GameBoard p1 p2 vessels hits) shot = do
       putStrLn $ "Off board: " ++ (show shot)
       pure $ GameBoard p1 p2 vessels hits
     else do
+      -- TODO only record unique hits?
       if didItHit vessels shot
         then do
           putStrLn "HIT!"

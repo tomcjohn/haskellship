@@ -7,32 +7,32 @@ import Orientation
 import Pos
 import Vessel
 
--- TODO add random placement for vessels on the board
+-- TODO don't allow vessels to be positioned on top of each other
+-- TODO don't allow vessels to be positioned off the board
 generateBoard :: IO GameBoard
 generateBoard = do
   let bL = (0,0)
   let tR = (9,9)
-  carrier <- (buildVessel buildCarrier bL tR)
-  battleship <- (buildVessel buildBattleship bL tR)
-  cruiser <- (buildVessel buildCruiser bL tR)
-  submarine <- (buildVessel buildSubmarine bL tR)
-  destroyer <- (buildVessel buildDestroyer bL tR)
-  let vessels = [carrier, battleship, cruiser, submarine, destroyer]
+  g <- getStdGen
+  let vesselBuilders = [bldCarrier, bldBattleship, bldCruiser, bldSubmarine, bldDestroyer]
+  vessels <- sequence $ buildVessels vesselBuilders g bL tR
   pure (GameBoard bL tR vessels [])
 
-buildVessel :: (Orientation -> Pos -> Vessel) -> Pos -> Pos -> IO Vessel
-buildVessel f bL tR = do
+buildVessels :: [(Orientation -> Pos -> Vessel)] -> StdGen -> Pos -> Pos -> [IO Vessel]
+buildVessels funcs gen bL tR = map (\f -> buildVessel f gen bL tR) funcs
+
+buildVessel :: (Orientation -> Pos -> Vessel) -> StdGen -> Pos -> Pos -> IO Vessel
+buildVessel f g bL tR = do
   o <- randomOrient
-  p <- randomPos bL tR
+  p <- randomPos g bL tR
   pure $ f o p
 
 randomOrient :: IO Orientation
 randomOrient = do
   pure Vertical
 
-randomPos :: Pos -> Pos -> IO Pos
-randomPos (x1,y1) (x2,y2) = do
-  g <- getStdGen
+randomPos :: StdGen -> Pos -> Pos -> IO Pos
+randomPos g (x1,y1) (x2,y2) = do
   r1 <- randomNumber (x1,x2) g
   r2 <- randomNumber (y1,y2) (snd r1)
   pure (fst r1,fst r2)
