@@ -16,7 +16,7 @@ generateBoard = do
   g <- getStdGen
   let vesselBuilders = [bldCarrier, bldBattleship, bldCruiser, bldSubmarine, bldDestroyer]
   vessels <- sequence $ buildVessels vesselBuilders g bL tR
-  pure (GameBoard bL tR vessels [])
+  pure (GameBoard bL tR vessels [] [])
 
 buildVessels :: [(Orientation -> Pos -> Vessel)] -> StdGen -> Pos -> Pos -> [IO Vessel]
 buildVessels funcs gen bL tR = map (\f -> buildVessel f gen bL tR) funcs
