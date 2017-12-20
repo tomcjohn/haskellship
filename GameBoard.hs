@@ -5,11 +5,11 @@ import Vessel
 
 data GameBoard = GameBoard Pos Pos [Vessel] [Pos] [Pos] deriving Show
 
--- TODO Flip y-axis, ie. 0,0 should be bottom left when output
+-- TODO look into terminal escape characters so board redisplays rather than scrolling in the window
 printBoard :: GameBoard -> IO ()
 printBoard (GameBoard (x1,y1) (x2,y2) _ hits misses) = do
   let xs = [x1..x2]
-  let ys = [y1..y2]
+  let ys = reverse [y1..y2]
   printRows hits misses xs ys
   putStr "  ="
   putStrLn (concat $ replicate ((maximum xs - minimum xs) + 1) "====")
@@ -79,5 +79,5 @@ onBoard (x1,y1) (x2,y2) (x,y) =
   x >= x1 && x <= x2 && y >= y1 && y <= y2
 
 gameOver :: GameBoard -> IO Bool
-gameOver (GameBoard _ _ vessels hits _) = do
+gameOver (GameBoard _ _ vessels hits _) =
   pure $ allSunk vessels hits

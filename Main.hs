@@ -21,9 +21,7 @@ buildVessels [] _ _ acc = pure acc
 buildVessels (f:fs) bL tR acc = do
   vessel <- buildVessel f bL tR
   if overlapsAny vessel acc
-    then do
-      putStrLn ("Overlapping vessel: " ++ (show vessel))
-      buildVessels (f:fs) bL tR acc
+    then buildVessels (f:fs) bL tR acc
     else buildVessels fs bL tR (vessel : acc)
 
 buildVessel :: (Orientation -> Pos -> Vessel) -> Pos -> Pos -> IO Vessel
@@ -32,9 +30,7 @@ buildVessel f bL tR = do
   p <- randomPos bL tR
   let vessel = f o p
   if vesselOffBoard tR vessel
-    then do
-      putStrLn ("Vessel off board: " ++ (show vessel))
-      buildVessel f bL tR
+    then buildVessel f bL tR
     else pure vessel
 
 overlapsAny :: Vessel -> [Vessel] -> Bool
@@ -73,6 +69,7 @@ strToPos s = do
   let y = read (splitPos!!1)
   (x,y)
 
+-- TODO figure out why if you enter null input before the first real shot the board seems to be regenerated (ie. the vessels are repositioned but generateBoard is not being called again - WTF!?!)
 runGame :: IO GameBoard -> IO ()
 runGame ioBoard = do
   board <- ioBoard
@@ -87,7 +84,7 @@ runGame ioBoard = do
       putStr "Take a shot (x,y): "
       line <- getLine
       if null line
-        then return ()
+        then runGame ioBoard
         else do
           let shot = strToPos line
           let newBoard = takeShot board shot
