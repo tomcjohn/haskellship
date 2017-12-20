@@ -9,6 +9,16 @@ data Vessel = Carrier Orientation [Pos] |
               Submarine Orientation [Pos] |
               Destroyer Orientation [Pos] deriving Show
 
+class HasPositions a where
+  positions :: a -> [Pos]
+
+instance HasPositions Vessel where
+  positions (Carrier _ ps) = ps
+  positions (Battleship _ ps) = ps
+  positions (Cruiser _ ps) = ps
+  positions (Submarine _ ps) = ps
+  positions (Destroyer _ ps) = ps
+
 bldCarrier :: Orientation -> Pos -> Vessel
 bldCarrier o p = Carrier o (listPositions o p 5)
 bldBattleship :: Orientation -> Pos -> Vessel
