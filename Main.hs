@@ -1,5 +1,6 @@
 module Main where
 
+import qualified Data.List as L
 import qualified Data.List.Split as S
 import System.Random
 import GameBoard
@@ -7,17 +8,23 @@ import Orientation
 import Pos
 import Vessel
 
--- TODO don't allow vessels to be positioned on top of each other
 generateBoard :: IO GameBoard
 generateBoard = do
   let bL = (0,0)
   let tR = (9,9)
   let vesselBuilders = [bldCarrier, bldBattleship, bldCruiser, bldSubmarine, bldDestroyer]
-  vessels <- sequence $ buildVessels vesselBuilders bL tR
+  vessels <- buildVessels vesselBuilders bL tR []
   pure (GameBoard bL tR vessels [] [])
 
-buildVessels :: [(Orientation -> Pos -> Vessel)] -> Pos -> Pos -> [IO Vessel]
-buildVessels funcs bL tR = map (\f -> buildVessel f bL tR) funcs
+buildVessels :: [(Orientation -> Pos -> Vessel)] -> Pos -> Pos -> [Vessel] -> IO [Vessel]
+buildVessels [] _ _ acc = pure acc
+buildVessels (f:fs) bL tR acc = do
+  vessel <- buildVessel f bL tR
+  if overlapsAny vessel acc
+    then do
+      putStrLn ("Overlapping vessel: " ++ (show vessel))
+      buildVessels (f:fs) bL tR acc
+    else buildVessels fs bL tR (vessel : acc)
 
 buildVessel :: (Orientation -> Pos -> Vessel) -> Pos -> Pos -> IO Vessel
 buildVessel f bL tR = do
@@ -30,9 +37,20 @@ buildVessel f bL tR = do
       buildVessel f bL tR
     else pure vessel
 
+overlapsAny :: Vessel -> [Vessel] -> Bool
+overlapsAny _ [] = False
+overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
+  where overlapping = do
+          let v1Pos = positions v1
+          let v2Pos = positions v2
+          not $ null $ L.intersect v1Pos v2Pos
+
 randomOrient :: IO Orientation
 randomOrient = do
-  pure Vertical
+  r <- randomNumber (1,2)
+  if r == 1
+    then pure Vertical
+    else pure Horizontal
 
 randomPos :: Pos -> Pos -> IO Pos
 randomPos (x1,y1) (x2,y2) = do
@@ -44,9 +62,10 @@ randomNumber :: (Int, Int) -> IO Int
 randomNumber bounds = do
   g <- getStdGen
   let r = randomR bounds g
-  setStdGen (snd r)
+  setStdGen $ snd r
   pure $ fst r
 
+-- TODO handle invalid entry by the user - ie. don't fail catastrophically
 strToPos :: String -> Pos
 strToPos s = do
   let splitPos = S.splitOn "," s

@@ -5,6 +5,8 @@ import Vessel
 
 data GameBoard = GameBoard Pos Pos [Vessel] [Pos] [Pos] deriving Show
 
+-- TODO Flip board, ie. 0,0 should be bottom left when output
+-- TODO Add cell indexes to board output
 printBoard :: GameBoard -> IO ()
 printBoard (GameBoard (x1,y1) (x2,y2) _ hits misses) = do
   printRows hits misses [x1..x2] [y1..y2]
@@ -46,6 +48,7 @@ vesselOffBoard tR v = do
   let lastPos = (last . positions) v :: Pos
   (fst lastPos) > (fst tR) || (snd lastPos) > (snd tR)
 
+-- TODO add "You sunk my Battleship!" style messages when a vessel is sunk
 takeShot :: GameBoard -> Pos -> IO GameBoard
 takeShot (GameBoard bL tR vessels hits misses) shot = do
   if not $ onBoard bL tR shot
