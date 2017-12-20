@@ -5,18 +5,24 @@ import Vessel
 
 data GameBoard = GameBoard Pos Pos [Vessel] [Pos] [Pos] deriving Show
 
--- TODO Flip board, ie. 0,0 should be bottom left when output
--- TODO Add cell indexes to board output
+-- TODO Flip y-axis, ie. 0,0 should be bottom left when output
 printBoard :: GameBoard -> IO ()
 printBoard (GameBoard (x1,y1) (x2,y2) _ hits misses) = do
-  printRows hits misses [x1..x2] [y1..y2]
-  putStrLn "========================================="
+  let xs = [x1..x2]
+  let ys = [y1..y2]
+  printRows hits misses xs ys
+  putStr "  ="
+  putStrLn (concat $ replicate ((maximum xs - minimum xs) + 1) "====")
+  putStr "   "
+  _ <- mapM (\x -> putStr $ " " ++ show x ++ "  ") xs
+  putStrLn ""
 
 printRows :: [Pos] -> [Pos] -> [Int] -> [Int] -> IO ()
 printRows _ _ _ [] = do
   pure ()
 printRows hits misses xs (y:ys) = do
-  putStrLn "========================================="
+  putStrLn "  ========================================="
+  putStr $ (show y) ++ " "
   printRow hits misses y xs
   printRows hits misses xs ys
 
