@@ -14,7 +14,7 @@ generateBoard = do
   let tR = (9,9)
   let vesselBuilders = [bldCarrier, bldBattleship, bldCruiser, bldSubmarine, bldDestroyer]
   vessels <- buildVessels vesselBuilders bL tR []
-  pure (GameBoard bL tR vessels [] [])
+  pure $ GameBoard bL tR vessels [] []
 
 buildVessels :: [(Orientation -> Pos -> Vessel)] -> Pos -> Pos -> [Vessel] -> IO [Vessel]
 buildVessels [] _ _ acc = pure acc
@@ -69,7 +69,6 @@ strToPos s = do
   let y = read (splitPos!!1)
   (x,y)
 
--- TODO figure out why if you enter null input before the first real shot the board seems to be regenerated (ie. the vessels are repositioned but generateBoard is not being called again - WTF!?!)
 runGame :: IO GameBoard -> IO ()
 runGame ioBoard = do
   board <- ioBoard
@@ -84,7 +83,7 @@ runGame ioBoard = do
       putStr "Take a shot (x,y): "
       line <- getLine
       if null line
-        then runGame ioBoard
+        then runGame $ pure board
         else do
           let shot = strToPos line
           let newBoard = takeShot board shot
