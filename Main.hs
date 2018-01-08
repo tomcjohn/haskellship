@@ -1,8 +1,10 @@
 module Main where
 
 import qualified Data.List as L
-import qualified Data.List.Split as S
 import System.Random
+import Text.Parsec
+import Text.Parsec.String
+
 import GameBoard
 import Orientation
 import Pos
@@ -61,13 +63,15 @@ randomNumber bounds = do
   setStdGen $ snd r
   pure $ fst r
 
--- TODO handle invalid entry by the user - ie. don't fail catastrophically
-strToPos :: String -> Pos
-strToPos s = do
-  let splitPos = S.splitOn "," s
-  let x = read (splitPos!!0)
-  let y = read (splitPos!!1)
-  (x,y)
+intParser :: Parser Int
+intParser = read <$> many1 digit
+
+posParser :: Parser Pos
+posParser = do
+  x <- intParser
+  _ <- oneOf ","
+  y <- intParser
+  pure (x,y)
 
 runGame :: IO GameBoard -> IO ()
 runGame ioBoard = do
@@ -82,12 +86,9 @@ runGame ioBoard = do
       print board
       putStr "Take a shot (x,y): "
       line <- getLine
-      if null line
-        then runGame $ pure board
-        else do
-          let shot = strToPos line
-          let newBoard = takeShot board shot
-          runGame newBoard
+      case parse posParser "" line of
+        Left _ -> runGame $ pure board
+        Right shot -> runGame $ takeShot board shot
 
 main :: IO ()
 main = do

@@ -66,7 +66,7 @@ takeShot (GameBoard bL tR vessels hits misses) shot = do
         then do
           putStrLn "Ignoring repeat shot ..."
           pure $ GameBoard bL tR vessels hits misses
-        else if didItHit vessels shot
+        else if didItHit shot vessels
           then do
             putStrLn "HIT!"
             pure $ GameBoard bL tR vessels (shot:hits) misses
