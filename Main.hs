@@ -16,7 +16,7 @@ generateBoard = do
   let tR = (9,9)
   let vesselBuilders = [bldCarrier, bldBattleship, bldCruiser, bldSubmarine, bldDestroyer]
   vessels <- buildVessels vesselBuilders bL tR []
-  pure $ GameBoard bL tR vessels [] []
+  pure $ GameBoard bL tR vessels []
 
 buildVessels :: [(Orientation -> Pos -> Vessel)] -> Pos -> Pos -> [Vessel] -> IO [Vessel]
 buildVessels [] _ _ acc = pure acc
