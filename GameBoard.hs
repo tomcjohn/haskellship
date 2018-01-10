@@ -3,6 +3,9 @@ module GameBoard where
 import Pos
 import Vessel
 
+-- A gameboard is created from a bottom left position, a top right position
+-- the list of vessels on the board, the list of shot positions that were hits
+-- and the list of shot positions that were misses.
 data GameBoard = GameBoard Pos Pos [Vessel] [Pos] [Pos] deriving Show
 
 -- TODO look into terminal escape characters so board redisplays rather than scrolling in the window

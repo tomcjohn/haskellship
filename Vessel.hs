@@ -3,6 +3,7 @@ module Vessel where
 import Orientation
 import Pos
 
+-- A vessel is made up of its type, orientation and a list of the positions it inhabits
 data Vessel = Carrier Orientation [Pos] |
               Battleship Orientation [Pos] |
               Cruiser Orientation [Pos] |
