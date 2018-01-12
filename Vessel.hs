@@ -60,6 +60,13 @@ vesselHits (Cruiser _ _ hs) = hs
 vesselHits (Submarine _ _ hs) = hs
 vesselHits (Destroyer _ _ hs) = hs
 
+vesselType :: Vessel -> String
+vesselType (Carrier _ _ _) = "carrier"
+vesselType (Battleship _ _ _) = "battleship"
+vesselType (Cruiser _ _ _) = "cruiser"
+vesselType (Submarine _ _ _) = "submarine"
+vesselType (Destroyer _ _ _) = "destroyer"
+
 allSunk :: [Vessel] -> Bool
 allSunk [] = True
 allSunk (v:vs) = isSunk v && allSunk vs
