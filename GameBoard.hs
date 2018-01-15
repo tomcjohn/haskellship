@@ -68,15 +68,15 @@ vesselOffBoard tR v = do
   (fst lastPos) > (fst tR) || (snd lastPos) > (snd tR)
 
 takeShot :: GameBoard -> Pos -> IO GameBoard
-takeShot (GameBoard bL tR vessels misses) shot = do
-  result <- shoot (GameBoard bL tR vessels misses) shot
+takeShot board@(GameBoard bL tR vessels misses) shot = do
+  result <- shoot board shot
   case result of
     OffBoard -> do
       putStrLn $ "Off board: " ++ (show shot)
-      pure $ GameBoard bL tR vessels misses
+      pure $ board
     RepeatShot -> do
       putStrLn $ "Ignoring repeat shot: " ++ (show shot)
-      pure $ GameBoard bL tR vessels misses
+      pure $ board
     Hit newVessels -> do
       putStrLn "HIT!"
       pure $ GameBoard bL tR newVessels misses
@@ -85,13 +85,13 @@ takeShot (GameBoard bL tR vessels misses) shot = do
       pure $ GameBoard bL tR vessels (shot:misses)
 
 shoot :: GameBoard -> Pos -> IO ShotResult
-shoot (GameBoard bL tR vessels misses) shot = do
+shoot board@(GameBoard bL tR _ misses) shot = do
   if not $ onBoard bL tR shot
     then pure OffBoard
   else if elem shot misses
     then pure RepeatShot
   else
-    checkForHit (GameBoard bL tR vessels misses) shot
+    checkForHit board shot
 
 checkForHit :: GameBoard -> Pos -> IO ShotResult
 checkForHit board shot = doIt board shot []
