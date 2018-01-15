@@ -103,9 +103,9 @@ checkForHit board shot = doIt board shot []
             then do
               let newVessel = addHit s v
               when (isSunk newVessel) $ putStrLn $ "You sunk my " ++ vesselType newVessel ++ "!"
-              pure $ Hit (addHit s v:(acc ++ vs))
+              pure $ Hit (acc ++ [addHit s v] ++ vs)
           else
-            doIt (GameBoard bL tR vs misses) s (v:acc)
+            doIt (GameBoard bL tR vs misses) s (acc ++ [v])
 
 onBoard :: Pos -> Pos -> Pos -> Bool
 onBoard (x1,y1) (x2,y2) (x,y) =
