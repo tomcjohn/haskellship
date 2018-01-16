@@ -36,6 +36,11 @@ buildVessel f bL tR = do
     then buildVessel f bL tR
     else pure vessel
 
+vesselOffBoard :: Pos -> Vessel -> Bool
+vesselOffBoard tR v = do
+  let lastPos = (last . positions) v :: Pos
+  (fst lastPos) > (fst tR) || (snd lastPos) > (snd tR)
+
 overlapsAny :: Vessel -> [Vessel] -> Bool
 overlapsAny _ [] = False
 overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
@@ -78,8 +83,7 @@ runGame :: IO GameBoard -> IO ()
 runGame ioBoard = do
   board <- ioBoard
   printBoard board
-  over <- gameOver board
-  if over
+  if gameOver board
     then do
       putStrLn "Game Over"
       putStrLn "YOU WIN!!!"

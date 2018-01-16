@@ -62,11 +62,6 @@ printSquare hits misses x y = do
     else putStr " "
   putStr " |"
 
-vesselOffBoard :: Pos -> Vessel -> Bool
-vesselOffBoard tR v = do
-  let lastPos = (last . positions) v :: Pos
-  (fst lastPos) > (fst tR) || (snd lastPos) > (snd tR)
-
 shoot :: GameBoard -> Pos -> IO GameBoard
 shoot board@(GameBoard bL tR vessels misses) shot = do
   result <- takeShot board shot
@@ -108,6 +103,6 @@ onBoard :: Pos -> Pos -> Pos -> Bool
 onBoard (x1,y1) (x2,y2) (x,y) =
   x >= x1 && x <= x2 && y >= y1 && y <= y2
 
-gameOver :: GameBoard -> IO Bool
+gameOver :: GameBoard -> Bool
 gameOver (GameBoard _ _ vessels _) =
-  pure $ allSunk vessels
+  allSunk vessels
