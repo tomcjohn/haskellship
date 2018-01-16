@@ -2,7 +2,6 @@ module GameBoard where
 
 import Control.Monad
 import Pos
-import System.Console.ANSI
 import Vessel
 
 -- A gameboard is created from a bottom left position, a top right position,
@@ -73,16 +72,16 @@ shoot board@(GameBoard bL tR vessels misses) shot = do
   result <- takeShot board shot
   case result of
     OffBoard -> do
-      putStrLn $ "Off board: " ++ (show shot)
+      putStrLn $ "Off board " ++ (show shot)
       pure $ board
     RepeatShot -> do
-      putStrLn $ "Ignoring repeat shot: " ++ (show shot)
+      putStrLn $ "Repeat shot " ++ (show shot)
       pure $ board
     Hit newVessels -> do
-      putStrLn "HIT!"
+      putStrLn $ "HIT " ++ (show shot)
       pure $ GameBoard bL tR newVessels misses
     Miss -> do
-      putStrLn "MISS!"
+      putStrLn $ "MISS " ++ (show shot)
       pure $ GameBoard bL tR vessels (shot:misses)
 
 takeShot :: GameBoard -> Pos -> IO ShotResult

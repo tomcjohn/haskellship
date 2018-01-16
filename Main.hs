@@ -1,6 +1,7 @@
 module Main where
 
 import qualified Data.List as L
+import qualified System.Console.ANSI as C
 import System.Random
 import Text.Parsec
 import Text.Parsec.String
@@ -83,15 +84,20 @@ runGame ioBoard = do
       putStrLn "Game Over"
       putStrLn "YOU WIN!!!"
     else do
-      --print board
       putStr "Take a shot (x,y): "
       line <- getLine
       case parse posParser "" line of
-        Left _ -> runGame ioBoard
-        Right shot -> runGame $ shoot board shot
+        Left _ -> do
+          C.clearScreen
+          putStrLn $ "Invalid input " ++ (show line)
+          runGame $ pure board
+        Right shot -> do
+          C.clearScreen
+          runGame $ shoot board shot
 
 main :: IO ()
 main = do
+  C.clearScreen
   putStrLn "Generating board ..."
-  let board = generateBoard
-  runGame board
+  let ioBoard = generateBoard
+  runGame ioBoard
