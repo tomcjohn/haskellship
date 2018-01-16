@@ -14,7 +14,7 @@ generateBoard :: IO GameBoard
 generateBoard = do
   let bL = (0,0)
   let tR = (9,9)
-  let vesselBuilders = [bldCarrier, bldBattleship, bldCruiser, bldSubmarine, bldDestroyer]
+  let vesselBuilders = [bldSubmarine, bldDestroyer, bldCruiser, bldCarrier, bldBattleship]
   vessels <- buildVessels vesselBuilders bL tR []
   pure $ GameBoard bL tR vessels []
 
@@ -83,12 +83,12 @@ runGame ioBoard = do
       putStrLn "Game Over"
       putStrLn "YOU WIN!!!"
     else do
-      print board
+      --print board
       putStr "Take a shot (x,y): "
       line <- getLine
       case parse posParser "" line of
-        Left _ -> runGame $ pure board
-        Right shot -> runGame $ takeShot board shot
+        Left _ -> runGame ioBoard
+        Right shot -> runGame $ shoot board shot
 
 main :: IO ()
 main = do

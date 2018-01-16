@@ -2,10 +2,11 @@ module GameBoard where
 
 import Control.Monad
 import Pos
+import System.Console.ANSI
 import Vessel
 
--- A gameboard is created from a bottom left position, a top right position
--- the list of vessels on the board and the list of shot positions that were misses.
+-- A gameboard is created from a bottom left position, a top right position,
+-- the list of vessels on the board and the list of shots that were misses.
 data GameBoard = GameBoard Pos Pos [Vessel] [Pos] deriving Show
 
 data ShotResult =
@@ -59,7 +60,7 @@ printSquare hits misses x y = do
     then putStr "X"
     else if elem (x,y) misses
       then putStr "-"
-      else putStr " "
+    else putStr " "
   putStr " |"
 
 vesselOffBoard :: Pos -> Vessel -> Bool
@@ -67,9 +68,9 @@ vesselOffBoard tR v = do
   let lastPos = (last . positions) v :: Pos
   (fst lastPos) > (fst tR) || (snd lastPos) > (snd tR)
 
-takeShot :: GameBoard -> Pos -> IO GameBoard
-takeShot board@(GameBoard bL tR vessels misses) shot = do
-  result <- shoot board shot
+shoot :: GameBoard -> Pos -> IO GameBoard
+shoot board@(GameBoard bL tR vessels misses) shot = do
+  result <- takeShot board shot
   case result of
     OffBoard -> do
       putStrLn $ "Off board: " ++ (show shot)
@@ -84,19 +85,16 @@ takeShot board@(GameBoard bL tR vessels misses) shot = do
       putStrLn "MISS!"
       pure $ GameBoard bL tR vessels (shot:misses)
 
-shoot :: GameBoard -> Pos -> IO ShotResult
-shoot board@(GameBoard bL tR _ misses) shot = do
+takeShot :: GameBoard -> Pos -> IO ShotResult
+takeShot (GameBoard bL tR vessels misses) shot = do
   if not $ onBoard bL tR shot
     then pure OffBoard
   else if elem shot misses
     then pure RepeatShot
   else
-    checkForHit board shot
-
-checkForHit :: GameBoard -> Pos -> IO ShotResult
-checkForHit board shot = doIt board shot []
-  where doIt (GameBoard _ _ [] _) _ _ = pure Miss
-        doIt (GameBoard bL tR (v:vs) misses) s acc = do
+    doIt vessels shot []
+  where doIt [] _ _ = pure Miss
+        doIt (v:vs) s acc = do
           if elem s (vesselHits v)
             then pure RepeatShot
           else if isHit s v
@@ -105,7 +103,7 @@ checkForHit board shot = doIt board shot []
               when (isSunk newVessel) $ putStrLn $ "You sunk my " ++ vesselType newVessel ++ "!"
               pure $ Hit (acc ++ [addHit s v] ++ vs)
           else
-            doIt (GameBoard bL tR vs misses) s (acc ++ [v])
+            doIt vs s (acc ++ [v])
 
 onBoard :: Pos -> Pos -> Pos -> Bool
 onBoard (x1,y1) (x2,y2) (x,y) =
