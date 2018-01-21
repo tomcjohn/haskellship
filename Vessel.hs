@@ -11,15 +11,17 @@ data Vessel = Carrier Orientation [Pos] [Pos] |
               Submarine Orientation [Pos] [Pos] |
               Destroyer Orientation [Pos] [Pos] deriving Show
 
-class HasPositions a where
-  positions :: a -> [Pos]
+-- Replace the Pos lists above with Sets instead and type alias a PosSet in Pos.hs
 
-instance HasPositions Vessel where
-  positions (Carrier _ ps _) = ps
-  positions (Battleship _ ps _) = ps
-  positions (Cruiser _ ps _) = ps
-  positions (Submarine _ ps _) = ps
-  positions (Destroyer _ ps _) = ps
+-- pull vessel type out of Vessel above
+
+-- replace positions function with record field
+positions :: Vessel -> [Pos]
+positions (Carrier _ ps _) = ps
+positions (Battleship _ ps _) = ps
+positions (Cruiser _ ps _) = ps
+positions (Submarine _ ps _) = ps
+positions (Destroyer _ ps _) = ps
 
 bldCarrier :: Orientation -> Pos -> Vessel
 bldCarrier o p = Carrier o (listPositions o p 5) []
@@ -68,9 +70,9 @@ vesselType (Submarine _ _ _) = "submarine"
 vesselType (Destroyer _ _ _) = "destroyer"
 
 allSunk :: [Vessel] -> Bool
-allSunk [] = True
-allSunk (v:vs) = isSunk v && allSunk vs
+allSunk vs = all isSunk vs
 
+-- when using Sets this should just become set equality
 isSunk :: Vessel -> Bool
 isSunk (Carrier _ ps hs) = contains ps hs
 isSunk (Battleship _ ps hs) = contains ps hs
@@ -79,5 +81,4 @@ isSunk (Submarine _ ps hs) = contains ps hs
 isSunk (Destroyer _ ps hs) = contains ps hs
 
 contains :: [Pos] -> [Pos] -> Bool
-contains [] _ = True
-contains (p:ps) hs = elem p hs && contains ps hs
+contains ps hs = all (flip elem hs) ps

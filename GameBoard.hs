@@ -6,7 +6,12 @@ import Vessel
 
 -- A gameboard is created from a bottom left position, a top right position,
 -- the list of vessels on the board and the list of shots that were misses.
-data GameBoard = GameBoard Pos Pos [Vessel] [Pos] deriving Show
+data GameBoard = GameBoard {
+  bottomLeft::Pos,
+  topRight::Pos,
+  vessels::[Vessel],
+  misses::[Pos]
+} deriving Show
 
 data ShotResult =
   OffBoard |
@@ -18,7 +23,7 @@ listHits :: [Vessel] -> [Pos]
 listHits [] = []
 listHits (v:vs) = vesselHits v ++ listHits vs
 
--- TODO look into terminal escape characters so board redisplays rather than scrolling in the window
+-- refactor the print functions below to minimise number of IO ()'s ie. printBoard should be the only one and the rest should return Strings - look at intercalate
 printBoard :: GameBoard -> IO ()
 printBoard (GameBoard (x1,y1) (x2,y2) vessels misses) = do
   let xs = [x1..x2]
@@ -62,22 +67,23 @@ printSquare hits misses x y = do
     else putStr " "
   putStr " |"
 
+-- try and get all IO into Main.hs!
 shoot :: GameBoard -> Pos -> IO GameBoard
-shoot board@(GameBoard bL tR vessels misses) shot = do
+shoot board shot = do
   result <- takeShot board shot
   case result of
     OffBoard -> do
       putStrLn $ "Off board " ++ (show shot)
-      pure $ board
+      pure board
     RepeatShot -> do
       putStrLn $ "Repeat shot " ++ (show shot)
-      pure $ board
+      pure board
     Hit newVessels -> do
       putStrLn $ "HIT " ++ (show shot)
-      pure $ GameBoard bL tR newVessels misses
+      pure $ board {vessels=newVessels}
     Miss -> do
       putStrLn $ "MISS " ++ (show shot)
-      pure $ GameBoard bL tR vessels (shot:misses)
+      pure $ board {misses=(shot:misses board)}
 
 takeShot :: GameBoard -> Pos -> IO ShotResult
 takeShot (GameBoard bL tR vessels misses) shot = do
@@ -87,6 +93,7 @@ takeShot (GameBoard bL tR vessels misses) shot = do
     then pure RepeatShot
   else
     doIt vessels shot []
+  -- could try runWriter here to build a pair of (ShotResult, [Vessel]) (avoids the need for doIt accumulator and all the list concatenation)
   where doIt [] _ _ = pure Miss
         doIt (v:vs) s acc = do
           if elem s (vesselHits v)
@@ -95,6 +102,7 @@ takeShot (GameBoard bL tR vessels misses) shot = do
             then do
               let newVessel = addHit s v
               when (isSunk newVessel) $ putStrLn $ "You sunk my " ++ vesselType newVessel ++ "!"
+              -- add field to Hit to contain Maybe sunk vessel (needed to move this IO out of here and back into Main)
               pure $ Hit (acc ++ [addHit s v] ++ vs)
           else
             doIt vs s (acc ++ [v])
@@ -104,5 +112,5 @@ onBoard (x1,y1) (x2,y2) (x,y) =
   x >= x1 && x <= x2 && y >= y1 && y <= y2
 
 gameOver :: GameBoard -> Bool
-gameOver (GameBoard _ _ vessels _) =
-  allSunk vessels
+gameOver board =
+  allSunk $ vessels board

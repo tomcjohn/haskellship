@@ -16,8 +16,8 @@ generateBoard = do
   let bL = (0,0)
   let tR = (9,9)
   let vesselBuilders = [bldSubmarine, bldDestroyer, bldCruiser, bldCarrier, bldBattleship]
-  vessels <- buildVessels vesselBuilders bL tR []
-  pure $ GameBoard bL tR vessels []
+  vs <- buildVessels vesselBuilders bL tR []
+  pure $ GameBoard bL tR vs []
 
 buildVessels :: [(Orientation -> Pos -> Vessel)] -> Pos -> Pos -> [Vessel] -> IO [Vessel]
 buildVessels [] _ _ acc = pure acc
@@ -72,6 +72,7 @@ randomNumber bounds = do
 intParser :: Parser Int
 intParser = read <$> many1 digit
 
+-- move position parsing into Pos.hs
 posParser :: Parser Pos
 posParser = do
   x <- intParser
@@ -79,9 +80,8 @@ posParser = do
   y <- intParser
   pure (x,y)
 
-runGame :: IO GameBoard -> IO ()
-runGame ioBoard = do
-  board <- ioBoard
+runGame :: GameBoard -> IO ()
+runGame board = do
   printBoard board
   if gameOver board
     then do
@@ -90,18 +90,19 @@ runGame ioBoard = do
     else do
       putStr "Take a shot (x,y): "
       line <- getLine
+      C.clearScreen
       case parse posParser "" line of
         Left _ -> do
-          C.clearScreen
           putStrLn $ "Invalid input " ++ (show line)
-          runGame $ pure board
+          runGame board
         Right shot -> do
-          C.clearScreen
-          runGame $ shoot board shot
+          -- consider replacing next two lines with "shoot board shot >>= runGame"
+          newBoard <- shoot board shot
+          runGame newBoard
 
 main :: IO ()
 main = do
   C.clearScreen
   putStrLn "Generating board ..."
-  let ioBoard = generateBoard
-  runGame ioBoard
+  board <- generateBoard
+  runGame board
