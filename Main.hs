@@ -1,7 +1,7 @@
 module Main where
 
-import qualified Data.List as L
-import qualified System.Console.ANSI as C
+import qualified Data.Set as Set
+import qualified System.Console.ANSI as Console
 import System.Random
 import Text.Parsec
 
@@ -16,7 +16,7 @@ generateBoard = do
   let tR = (9,9)
   let vesselBuilders = [bldSubmarine, bldDestroyer, bldCruiser, bldCarrier, bldBattleship]
   vs <- buildVessels vesselBuilders bL tR []
-  pure $ GameBoard bL tR vs []
+  pure $ GameBoard bL tR vs Set.empty
 
 buildVessels :: [(Orientation -> Pos -> Vessel)] -> Pos -> Pos -> [Vessel] -> IO [Vessel]
 buildVessels [] _ _ acc = pure acc
@@ -31,14 +31,18 @@ buildVessel f bL tR = do
   o <- randomOrient
   p <- randomPos bL tR
   let vessel = f o p
-  if vesselOffBoard tR vessel
+  if vesselOffBoard tR (positions vessel)
     then buildVessel f bL tR
     else pure vessel
 
-vesselOffBoard :: Pos -> Vessel -> Bool
-vesselOffBoard tR v = do
-  let lastPos = (last . positions) v :: Pos
-  (fst lastPos) > (fst tR) || (snd lastPos) > (snd tR)
+vesselOffBoard :: Pos -> PosSet -> Bool
+vesselOffBoard tR ps
+  | Set.null ps = False
+  | otherwise = do
+      let p = Set.elemAt 0 ps
+      if (fst p) > (fst tR) || (snd p) > (snd tR)
+        then True
+        else vesselOffBoard tR ps
 
 overlapsAny :: Vessel -> [Vessel] -> Bool
 overlapsAny _ [] = False
@@ -46,7 +50,7 @@ overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
   where overlapping = do
           let v1Pos = positions v1
           let v2Pos = positions v2
-          not $ null $ L.intersect v1Pos v2Pos
+          not $ null $ Set.intersection v1Pos v2Pos
 
 randomOrient :: IO Orientation
 randomOrient = do
@@ -78,7 +82,7 @@ runGame board = do
     else do
       putStr "Take a shot (x,y): "
       line <- getLine
-      C.clearScreen
+      --Console.clearScreen
       case parse posParser "" line of
         Left _ -> do
           putStrLn $ "Invalid input " ++ (show line)
@@ -89,7 +93,7 @@ runGame board = do
 
 main :: IO ()
 main = do
-  C.clearScreen
+  --Console.clearScreen
   putStrLn "Generating board ..."
   board <- generateBoard
   runGame board

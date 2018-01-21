@@ -1,9 +1,11 @@
 module Pos where
 
+import Data.Set (Set)
 import Text.Parsec
 import Text.Parsec.String
 
 type Pos = (Int, Int)
+type PosSet = Set Pos
 
 posParser :: Parser Pos
 posParser = do
