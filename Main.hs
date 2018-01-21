@@ -4,7 +4,6 @@ import qualified Data.List as L
 import qualified System.Console.ANSI as C
 import System.Random
 import Text.Parsec
-import Text.Parsec.String
 
 import GameBoard
 import Orientation
@@ -69,17 +68,6 @@ randomNumber bounds = do
   setStdGen $ snd r
   pure $ fst r
 
-intParser :: Parser Int
-intParser = read <$> many1 digit
-
--- move position parsing into Pos.hs
-posParser :: Parser Pos
-posParser = do
-  x <- intParser
-  _ <- oneOf ","
-  y <- intParser
-  pure (x,y)
-
 runGame :: GameBoard -> IO ()
 runGame board = do
   printBoard board
@@ -96,9 +84,8 @@ runGame board = do
           putStrLn $ "Invalid input " ++ (show line)
           runGame board
         Right shot -> do
-          -- consider replacing next two lines with "shoot board shot >>= runGame"
-          newBoard <- shoot board shot
-          runGame newBoard
+          -- take the shot and bind the result back into the recursive call to runGame
+          shoot board shot >>= runGame
 
 main :: IO ()
 main = do
