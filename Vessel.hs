@@ -34,9 +34,8 @@ nextPos :: Orientation -> Pos -> Pos
 nextPos Horizontal (x,y) = ((x+1), y)
 nextPos Vertical   (x,y) = (x, (y+1))
 
--- TODO can we use record syntax shortcut to just update the hits field in the given vessel?
 addHit :: Pos -> Vessel -> Vessel
-addHit s (Vessel t o ps hs) = Vessel t o ps (Set.insert s hs)
+addHit s v = v {hits=Set.insert s (hits v)}
 
 isHit :: Pos -> Vessel -> Bool
 isHit s v = elem s (positions v)
