@@ -5,6 +5,7 @@ import Text.Parsec
 
 import GameBoard
 import Pos
+import Vessel
 
 runGame :: GameBoard -> IO ()
 runGame board = do
@@ -27,7 +28,7 @@ runGame board = do
 
 shoot :: GameBoard -> Pos -> IO GameBoard
 shoot board shot = do
-  result <- takeShot board shot
+  let result = takeShot board shot
   case result of
     OffBoard -> do
       putStrLn $ "Off board " ++ show shot
@@ -35,12 +36,17 @@ shoot board shot = do
     RepeatShot -> do
       putStrLn $ "Repeat shot " ++ show shot
       pure board
-    Hit newVessels -> do
+    Hit newBoard maybeSunk -> do
+      printSunk maybeSunk
       putStrLn $ "HIT " ++ show shot
-      pure $ board {vessels=newVessels}
-    Miss -> do
+      pure newBoard
+    Miss newBoard -> do
       putStrLn $ "MISS " ++ show shot
-      pure $ board {misses=Set.insert shot (misses board)}
+      pure newBoard
+
+printSunk :: Maybe Vessel -> IO ()
+printSunk (Just v) = putStrLn $ "You sunk my " ++ show (vesselType v) ++ "!"
+printSunk Nothing = pure ()
 
 main :: IO ()
 main = do

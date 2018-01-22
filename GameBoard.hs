@@ -1,6 +1,5 @@
 module GameBoard where
 
-import Control.Monad
 import qualified Data.Set as Set
 import qualified System.Random as Rand
 import Orientation
@@ -19,8 +18,8 @@ data GameBoard = GameBoard {
 data ShotResult =
   OffBoard |
   RepeatShot |
-  Hit [Vessel] |
-  Miss
+  Hit GameBoard (Maybe Vessel) |
+  Miss GameBoard
 
 generateBoard :: IO GameBoard
 generateBoard = do
@@ -120,25 +119,24 @@ printSquare hs ms x y
   | (x,y) `elem` ms = " - |"
   | otherwise = "   |"
 
-takeShot :: GameBoard -> Pos -> IO ShotResult
-takeShot (GameBoard bL tR vs ms) shot =
+takeShot :: GameBoard -> Pos -> ShotResult
+takeShot board@(GameBoard bL tR vs ms) shot =
   if not $ onBoard bL tR shot
-    then pure OffBoard
+    then OffBoard
   else if shot `elem` ms
-    then pure RepeatShot
+    then RepeatShot
   else
     doIt vs shot []
   -- TODO could try runWriter here to build a pair of (ShotResult, [Vessel]) (avoids the need for doIt accumulator and all the list concatenation)
-  where doIt [] _ _ = pure Miss
+  where doIt [] _ _ = Miss $ board {misses=Set.insert shot (misses board)}
         doIt (v:vRest) s acc =
           if s `elem` hits v
-            then pure RepeatShot
+            then RepeatShot
           else if isHit s v
             then do
               let newVessel = addHit s v
-              when (isSunk newVessel) $ putStrLn $ "You sunk my " ++ show (vesselType newVessel) ++ "!"
-              -- TODO add field to Hit to contain Maybe sunk vessel (needed to move this IO out of here and back into Main)
-              pure $ Hit (acc ++ [addHit s v] ++ vRest)
+              let newVessels = acc ++ [newVessel] ++ vRest
+              Hit (board {vessels=newVessels}) (if isSunk newVessel then Just newVessel else Nothing)
           else
             doIt vRest s (acc ++ [v])
 
