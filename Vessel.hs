@@ -41,6 +41,10 @@ addHit s (Vessel t o ps hs) = Vessel t o ps (Set.insert s hs)
 isHit :: Pos -> Vessel -> Bool
 isHit s v = elem s (positions v)
 
+listHits :: [Vessel] -> PosSet
+listHits [] = Set.empty
+listHits (v:vs) = Set.union (hits v) (listHits vs)
+
 allSunk :: [Vessel] -> Bool
 allSunk vs = all isSunk vs
 

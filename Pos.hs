@@ -1,5 +1,6 @@
 module Pos where
 
+-- TODO can we reduce the proliferation of Set logic across Pos, Vessel and GameBoard now?
 import Data.Set (Set)
 import Text.Parsec
 import Text.Parsec.String
