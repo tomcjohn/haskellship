@@ -1,7 +1,6 @@
 module GameBoard where
 
 import qualified Data.Set as Set
-import qualified System.Random as Rand
 import Orientation
 import Pos
 import Vessel
@@ -58,26 +57,6 @@ overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
           let v1Pos = positions v1
           let v2Pos = positions v2
           not $ null $ Set.intersection v1Pos v2Pos
-
-randomOrient :: IO Orientation
-randomOrient = do
-  r <- randomNumber (1,2)
-  if r == 1
-    then pure Vertical
-    else pure Horizontal
-
-randomPos :: Pos -> Pos -> IO Pos
-randomPos (x1,y1) (x2,y2) = do
-  x <- randomNumber (x1,x2)
-  y <- randomNumber (y1,y2)
-  pure (x,y)
-
-randomNumber :: (Int, Int) -> IO Int
-randomNumber bounds = do
-  g <- Rand.getStdGen
-  let r = Rand.randomR bounds g
-  Rand.setStdGen $ snd r
-  pure $ fst r
 
 printBoard :: GameBoard -> IO ()
 printBoard (GameBoard (x1,y1) (x2,y2) vs ms) = do
