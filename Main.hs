@@ -19,11 +19,28 @@ runGame board = do
       Console.clearScreen
       case parse posParser "" line of
         Left _ -> do
-          putStrLn $ "Invalid input " ++ (show line)
+          putStrLn $ "Invalid input " ++ show line
           runGame board
-        Right shot -> do
+        Right shot ->
           -- take the shot and bind the result back into the recursive call to runGame
           shoot board shot >>= runGame
+
+shoot :: GameBoard -> Pos -> IO GameBoard
+shoot board shot = do
+  result <- takeShot board shot
+  case result of
+    OffBoard -> do
+      putStrLn $ "Off board " ++ show shot
+      pure board
+    RepeatShot -> do
+      putStrLn $ "Repeat shot " ++ show shot
+      pure board
+    Hit newVessels -> do
+      putStrLn $ "HIT " ++ show shot
+      pure $ board {vessels=newVessels}
+    Miss -> do
+      putStrLn $ "MISS " ++ show shot
+      pure $ board {misses=Set.insert shot (misses board)}
 
 main :: IO ()
 main = do

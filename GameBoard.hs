@@ -80,8 +80,6 @@ randomNumber bounds = do
   Rand.setStdGen $ snd r
   pure $ fst r
 
--- TODO refactor the print functions below to minimise number of IO ()'s
--- ie. printBoard should be the only one and the rest should return Strings - look at intercalate
 printBoard :: GameBoard -> IO ()
 printBoard (GameBoard (x1,y1) (x2,y2) vs ms) = do
   let xs = [x1..x2]
@@ -121,24 +119,6 @@ printSquare hs ms x y
   | (x,y) `elem` hs = " X |"
   | (x,y) `elem` ms = " - |"
   | otherwise = "   |"
-
--- TODO try and get all IO into Main.hs!
-shoot :: GameBoard -> Pos -> IO GameBoard
-shoot board shot = do
-  result <- takeShot board shot
-  case result of
-    OffBoard -> do
-      putStrLn $ "Off board " ++ show shot
-      pure board
-    RepeatShot -> do
-      putStrLn $ "Repeat shot " ++ show shot
-      pure board
-    Hit newVessels -> do
-      putStrLn $ "HIT " ++ show shot
-      pure $ board {vessels=newVessels}
-    Miss -> do
-      putStrLn $ "MISS " ++ show shot
-      pure $ board {misses=Set.insert shot (misses board)}
 
 takeShot :: GameBoard -> Pos -> IO ShotResult
 takeShot (GameBoard bL tR vs ms) shot =
