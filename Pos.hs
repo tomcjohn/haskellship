@@ -1,7 +1,7 @@
 module Pos where
 
--- TODO can we reduce the proliferation of Set logic across Pos, Vessel and GameBoard now?
 import Data.Set (Set)
+import qualified Data.Set as Set
 import qualified System.Random as Rand
 import Text.Parsec
 import Text.Parsec.String
@@ -31,3 +31,18 @@ posParser = do
 
 intParser :: Parser Int
 intParser = read <$> many1 digit
+
+empty :: PosSet
+empty = Set.empty
+
+elems :: PosSet -> [Pos]
+elems = Set.elems
+
+insert :: Pos -> PosSet -> PosSet
+insert = Set.insert
+
+union :: PosSet -> PosSet -> PosSet
+union = Set.union
+
+intersection :: PosSet -> PosSet -> PosSet
+intersection = Set.intersection

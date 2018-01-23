@@ -1,6 +1,5 @@
 module GameBoard where
 
-import qualified Data.Set as Set
 import Orientation
 import Pos
 import Vessel
@@ -26,7 +25,7 @@ generateBoard = do
   let tR = (9,9)
   let vesselBuilders = [bldSubmarine, bldDestroyer, bldCruiser, bldCarrier, bldBattleship]
   vs <- buildVessels vesselBuilders bL tR []
-  pure $ GameBoard bL tR vs Set.empty
+  pure $ GameBoard bL tR vs empty
 
 buildVessels :: [Orientation -> Pos -> Vessel] -> Pos -> Pos -> [Vessel] -> IO [Vessel]
 buildVessels [] _ _ acc = pure acc
@@ -47,7 +46,7 @@ buildVessel f bL tR = do
 
 vesselOffBoard :: Pos -> Vessel -> Bool
 vesselOffBoard tR vessel = do
-  let lastPos = last $ Set.elems $ positions vessel
+  let lastPos = last $ elems $ positions vessel
   (fst lastPos > fst tR) || (snd lastPos > snd tR)
 
 overlapsAny :: Vessel -> [Vessel] -> Bool
@@ -56,7 +55,7 @@ overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
   where overlapping = do
           let v1Pos = positions v1
           let v2Pos = positions v2
-          not $ null $ Set.intersection v1Pos v2Pos
+          not $ null $ intersection v1Pos v2Pos
 
 printBoard :: GameBoard -> IO ()
 printBoard (GameBoard (x1,y1) (x2,y2) vs ms) = do
@@ -107,7 +106,7 @@ takeShot board@(GameBoard bL tR vs ms) shot =
   else
     doIt vs shot []
   -- TODO could try runWriter here to build a pair of (ShotResult, [Vessel]) (avoids the need for doIt accumulator and all the list concatenation)
-  where doIt [] _ _ = Miss $ board {misses=Set.insert shot (misses board)}
+  where doIt [] _ _ = Miss $ board {misses=insert shot (misses board)}
         doIt (v:vRest) s acc =
           if s `elem` hits v
             then RepeatShot
