@@ -98,25 +98,26 @@ printSquare hs ms x y
   | otherwise = "   |"
 
 takeShot :: GameBoard -> Pos -> ShotResult
-takeShot board@(GameBoard bL tR vs ms) shot =
-  if not $ onBoard bL tR shot
+takeShot board shot =
+  if not $ onBoard (bottomLeft board) (topRight board) shot
     then OffBoard
-  else if shot `elem` ms
+  else if shot `elem` (misses board)
     then RepeatShot
   else
-    doIt vs shot []
+    doIt (vessels board) shot []
   -- TODO could try runWriter here to build a pair of (ShotResult, [Vessel]) (avoids the need for doIt accumulator and all the list concatenation)
   where doIt [] _ _ = Miss $ board {misses=insert shot (misses board)}
-        doIt (v:vRest) s acc =
+        doIt (v:vs) s acc =
           if s `elem` hits v
             then RepeatShot
           else if isHit s v
             then do
               let newVessel = addHit s v
-              let newVessels = acc ++ [newVessel] ++ vRest
-              Hit (board {vessels=newVessels}) (if isSunk newVessel then Just newVessel else Nothing)
+              let newVessels = acc ++ [newVessel] ++ vs
+              Hit (board {vessels=newVessels})
+                (if isSunk newVessel then Just newVessel else Nothing)
           else
-            doIt vRest s (acc ++ [v])
+            doIt vs s (acc ++ [v])
 
 onBoard :: Pos -> Pos -> Pos -> Bool
 onBoard (x1,y1) (x2,y2) (x,y) =
