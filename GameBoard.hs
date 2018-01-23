@@ -1,5 +1,6 @@
 module GameBoard where
 
+import qualified Data.List as List
 import Orientation
 import Pos
 import Vessel
@@ -58,44 +59,46 @@ overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
           not $ null $ intersection v1Pos v2Pos
 
 printBoard :: GameBoard -> IO ()
-printBoard (GameBoard (x1,y1) (x2,y2) vs ms) = do
+printBoard board@(GameBoard (x1,y1) (x2,y2) _ _) = do
   let xs = [x1..x2]
   let ys = reverse [y1..y2]
-  let strs = printRows (listHits vs) ms xs ys
-  printStrings strs
-  putStr "  ="
-  putStrLn (concat $ replicate ((maximum xs - minimum xs) + 1) "====")
-  putStr "   "
-  _ <- mapM (\x -> putStr $ " " ++ show x ++ "  ") xs
-  putStrLn ""
+  let boardStrs = printRows ys xs board
+  let xIndexes = "   " ++ (concat $ fmap (\x -> " " ++ show x ++ "  ") xs)
+  let footer = [rowHeader xs, xIndexes]
+  printStrings $ boardStrs ++ footer
+  where printStrings [] = pure ()
+        printStrings (s:ss) = do
+          putStrLn s
+          printStrings ss
 
-printStrings :: [String] -> IO ()
-printStrings [] = pure ()
-printStrings (s:ss) = do
-  putStrLn s
-  printStrings ss
+printRows :: [Int] -> [Int] -> GameBoard -> [String]
+printRows [] _ _ = []
+printRows (y:ys) xs board = do
+  printRow y xs board ++ printRows ys xs board
 
-printRows :: PosSet -> PosSet -> [Int] -> [Int] -> [String]
-printRows _ _ _ [] = []
-printRows hs ms xs (y:ys) = do
-  let rowHeader = "  ========================================="
-  let row = show y ++ " " ++ printRow hs ms y xs
-  rowHeader : (row : printRows hs ms xs ys)
+printRow :: Int -> [Int] -> GameBoard -> [String]
+printRow y xs board = do
+  let rowBody = show y ++ " |" ++ printSquares y xs board
+  [rowHeader xs, rowBody]
 
-printRow :: PosSet -> PosSet -> Int -> [Int] -> String
-printRow hs ms y xs =
-  "|" ++ printSquares hs ms y xs
+rowHeader :: [Int] -> String
+rowHeader range = "  =" ++ (concat $ replicate ((maximum range - minimum range) + 1) "====")
 
-printSquares :: PosSet -> PosSet -> Int -> [Int] -> String
-printSquares _ _ _ [] = ""
-printSquares hs ms y (x:xs) =
-  printSquare hs ms x y ++ printSquares hs ms y xs
+printSquares :: Int -> [Int] -> GameBoard -> String
+printSquares _ [] _ = ""
+printSquares y (x:xs) board =
+  printSquare y x board ++ printSquares y xs board
 
-printSquare :: PosSet -> PosSet -> Int -> Int -> String
-printSquare hs ms x y
-  | (x,y) `elem` hs = " X |"
-  | (x,y) `elem` ms = " - |"
-  | otherwise = "   |"
+printSquare :: Int -> Int -> GameBoard -> String
+printSquare y x board = do
+  let hs = listHits (vessels board)
+  let ms = misses board
+  let char = if (x,y) `elem` hs
+               then "X"
+               else if (x,y) `elem` ms
+                 then "-"
+                 else " "
+  List.intercalate char [" ", " |"]
 
 takeShot :: GameBoard -> Pos -> ShotResult
 takeShot board shot =
