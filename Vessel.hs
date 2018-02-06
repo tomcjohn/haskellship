@@ -1,4 +1,17 @@
-module Vessel where
+module Vessel
+  ( Vessel (..)
+  , VesselType (..)
+  , allSunk
+  , bldCarrier
+  , bldBattleship
+  , bldCruiser
+  , bldSubmarine
+  , bldDestroyer
+  , isHit
+  , isSunk
+  , listHits
+  , addHit
+  ) where
 
 import Orientation
 import Pos

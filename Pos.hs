@@ -1,6 +1,6 @@
 module Pos
-  ( Pos (..)
-  , PosSet (..)
+  ( Pos
+  , PosSet
   , empty
   , elems
   , fromList

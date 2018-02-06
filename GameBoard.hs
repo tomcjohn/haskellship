@@ -2,7 +2,7 @@ module GameBoard
   ( GameBoard (..)
   , ShotResult (..)
   , generateBoard
-  , printBoard
+  , renderBoard
   , takeShot
   , gameOver
   ) where
@@ -65,18 +65,11 @@ overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
           let v2Pos = positions v2
           not $ null $ intersection v1Pos v2Pos
 
-printBoard :: GameBoard -> IO ()
-printBoard board@(GameBoard (x1,y1) (x2,y2) _ _) = do
+renderBoard :: GameBoard -> String
+renderBoard board@(GameBoard (x1,y1) (x2,y2) _ _) = do
   let xs = [x1..x2]
   let ys = reverse [y1..y2]
-  let boardStrs = printRows ys xs board
-  let xIndexes = "   " ++ (concat $ fmap (\x -> " " ++ show x ++ "  ") xs)
-  let footer = [rowHeader xs, xIndexes]
-  printStrings $ boardStrs ++ footer
-  where printStrings [] = pure ()
-        printStrings (s:ss) = do
-          putStrLn s
-          printStrings ss
+  concat $ fmap (++ "\n") $ printRows ys xs board ++ (finalRow xs)
 
 printRows :: [Int] -> [Int] -> GameBoard -> [String]
 printRows [] _ _ = []
@@ -106,6 +99,11 @@ printSquare y x board = do
                  then "-"
                  else " "
   List.intercalate char [" ", " |"]
+
+finalRow :: [Int] -> [String]
+finalRow xs =
+  let xIndexes = "   " ++ (concat $ fmap (\x -> " " ++ show x ++ "  ") xs)
+  in [rowHeader xs, xIndexes]
 
 takeShot :: GameBoard -> Pos -> ShotResult
 takeShot board shot =

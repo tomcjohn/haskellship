@@ -9,7 +9,7 @@ import Vessel
 
 runGame :: GameBoard -> IO ()
 runGame board = do
-  printBoard board
+  putStrLn $ renderBoard board
   if gameOver board
     then do
       putStrLn "Game Over"
