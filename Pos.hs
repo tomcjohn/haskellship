@@ -1,4 +1,15 @@
-module Pos where
+module Pos
+  ( Pos (..)
+  , PosSet (..)
+  , empty
+  , elems
+  , fromList
+  , insert
+  , intersection
+  , posParser
+  , randomPos
+  , union
+  ) where
 
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -34,6 +45,9 @@ intParser = read <$> many1 digit
 
 empty :: PosSet
 empty = Set.empty
+
+fromList :: [Pos] -> PosSet
+fromList = Set.fromList
 
 elems :: PosSet -> [Pos]
 elems = Set.elems

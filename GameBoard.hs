@@ -1,4 +1,11 @@
-module GameBoard where
+module GameBoard
+  ( GameBoard (..)
+  , ShotResult (..)
+  , generateBoard
+  , printBoard
+  , takeShot
+  , gameOver
+  ) where
 
 import qualified Data.List as List
 import Orientation
