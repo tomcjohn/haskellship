@@ -23,7 +23,25 @@ generateBoard = do
   let tR = (9,9)
   let vesselBuilders = [bldSubmarine, bldDestroyer, bldCruiser, bldCarrier, bldBattleship]
   vs <- buildVessels vesselBuilders bL tR []
-  pure $ GameBoard bL tR []
+  print vs
+  pure $ GameBoard bL tR $ createCells vs bL tR
+
+createCells :: [PositionedVessel] -> Pos -> Pos -> [[Cell]]
+createCells vs (x1,y1) (x2,y2) = do
+  let xs = [x1..x2]
+  let ys = [y1..y2]
+  createRows vs xs ys
+
+createRows :: [PositionedVessel] -> [Int] -> [Int] -> [[Cell]]
+createRows _  _  []     = []
+createRows vs xs (y:ys) = createRow vs xs y : createRows vs xs ys
+
+createRow :: [PositionedVessel] -> [Int] -> Int -> [Cell]
+createRow _  []     _ = []
+createRow vs (x:xs) y = createCell vs x y : createRow vs xs y
+
+createCell :: [PositionedVessel] -> Int -> Int -> Cell
+createCell vs x y = Cell NoVessel Miss
 
 buildVessels :: [Orientation -> Pos -> PositionedVessel] -> Pos -> Pos -> [PositionedVessel] -> IO [PositionedVessel]
 buildVessels [] _ _ acc = pure acc
@@ -32,7 +50,7 @@ buildVessels (f:fs) bL tR acc = do
   if overlapsAny vessel acc
     then buildVessels (f:fs) bL tR acc
     else buildVessels fs bL tR (vessel : acc)
- 
+
 buildVessel :: (Orientation -> Pos -> PositionedVessel) -> Pos -> Pos -> IO PositionedVessel
 buildVessel f bL tR = do
   o <- randomOrient
@@ -41,12 +59,12 @@ buildVessel f bL tR = do
   if vesselOffBoard tR vessel
     then buildVessel f bL tR
     else pure vessel
- 
+
 vesselOffBoard :: Pos -> PositionedVessel -> Bool
 vesselOffBoard tR vessel = do
   let lastPos = last $ elems $ positions vessel
   (fst lastPos > fst tR) || (snd lastPos > snd tR)
- 
+
 overlapsAny :: PositionedVessel -> [PositionedVessel] -> Bool
 overlapsAny _ [] = False
 overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
