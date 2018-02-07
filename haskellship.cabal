@@ -1,22 +1,46 @@
 name:                haskellship
 version:             0.1.0.0
--- synopsis:
--- description:
 homepage:            https://github.com/tomcjohn/haskellship
---license:             BSD3
---license-file:        LICENSE
+license:             BSD3
+license-file:        LICENSE
 author:              Tom John
 maintainer:          tomcjohn@gmail.com
 copyright:           2018 Tom John
-category:            Web
+category:            Games
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
 
-executable haskellship
+library
+  -- Modules included in this executable, other than Main.
+  exposed-modules:     GameBoard
+                     , Orientation
+                     , Pos
+                     , Vessel
+
+  ghc-options:         -Wall
+                       -fno-warn-unused-binds
+                       -fno-warn-unused-do-bind
+                       -fno-warn-unused-imports
+                       -fno-warn-type-defaults
+                       -ferror-spans
+
+  -- Other library packages from which modules are imported.
+  build-depends:       base >= 4.7 && < 5
+                     , ansi-terminal
+                     , containers
+                     , parsec
+                     , random
+
+  -- Directories containing source files.
   hs-source-dirs:      src
-  main-is:             Main.hs
+
+  -- Base language which the package is written in.
   default-language:    Haskell2010
+
+executable haskellship
+  main-is:             Main.hs
+  hs-source-dirs:      src
   build-depends:       base >= 4.7 && < 5
                      , ansi-terminal
                      , containers
@@ -26,3 +50,13 @@ executable haskellship
                      , Orientation
                      , Pos
                      , Vessel
+  default-language:    Haskell2010
+
+test-suite haskellship-tests
+  default-language:    Haskell2010
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      tests
+  main-is:             Tests.hs
+  build-depends:       base >= 4.7 && < 5
+                     , haskellship
+                     , hspec == 2.4.*

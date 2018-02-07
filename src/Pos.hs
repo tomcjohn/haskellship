@@ -1,10 +1,10 @@
 module Pos where
 
-import Data.Set (Set)
-import qualified Data.Set as Set
-import qualified System.Random as Rand
-import Text.Parsec
-import Text.Parsec.String
+import           Data.Set           (Set)
+import qualified Data.Set           as Set
+import qualified System.Random      as Rand
+import           Text.Parsec
+import           Text.Parsec.String
 
 type Pos = (Int, Int)
 type PosSet = Set Pos

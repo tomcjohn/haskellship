@@ -9,7 +9,7 @@ instance Random Orientation where
                (r, g') -> (toEnum r, g')
   randomR (a,b) g = case randomR (fromEnum a, fromEnum b) g of
                       (r, g') -> (toEnum r, g')
-
+ 
 randomOrient :: IO Orientation
 randomOrient = do
   g <- getStdGen

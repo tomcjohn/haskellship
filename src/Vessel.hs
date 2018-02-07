@@ -3,27 +3,24 @@ module Vessel where
 import Orientation
 import Pos
 
--- A vessel is constructed from a vessel type, an orientation, a list of the positions
--- it inhabits and a list of the positions where it has been hit by shots.
-data Vessel = Vessel {
-  vesselType::VesselType,
-  orientation::Orientation,
-  positions::PosSet,
-  hits::PosSet
-} deriving Show
+data VesselType = Carrier | Battleship | Cruiser | Submarine | Destroyer | NoVessel deriving Show
 
-data VesselType = Carrier | Battleship | Cruiser | Submarine | Destroyer deriving Show
+data PositionedVessel = PositionedVessel
+  { vesselType::VesselType
+  , orientation::Orientation
+  , positions::PosSet
+  } deriving Show
 
-bldCarrier :: Orientation -> Pos -> Vessel
-bldCarrier o p = Vessel Carrier o (listPositions o p 5) empty
-bldBattleship :: Orientation -> Pos -> Vessel
-bldBattleship o p = Vessel Battleship o (listPositions o p 4) empty
-bldCruiser :: Orientation -> Pos -> Vessel
-bldCruiser o p = Vessel Cruiser o (listPositions o p 3) empty
-bldSubmarine :: Orientation -> Pos -> Vessel
-bldSubmarine o p = Vessel Submarine o (listPositions o p 3) empty
-bldDestroyer :: Orientation -> Pos -> Vessel
-bldDestroyer o p = Vessel Destroyer o (listPositions o p 2) empty
+bldCarrier :: Orientation -> Pos -> PositionedVessel
+bldCarrier o p = PositionedVessel Carrier o (listPositions o p 5)
+bldBattleship :: Orientation -> Pos -> PositionedVessel
+bldBattleship o p = PositionedVessel Battleship o (listPositions o p 4)
+bldCruiser :: Orientation -> Pos -> PositionedVessel
+bldCruiser o p = PositionedVessel Cruiser o (listPositions o p 3)
+bldSubmarine :: Orientation -> Pos -> PositionedVessel
+bldSubmarine o p = PositionedVessel Submarine o (listPositions o p 3)
+bldDestroyer :: Orientation -> Pos -> PositionedVessel
+bldDestroyer o p = PositionedVessel Destroyer o (listPositions o p 2)
 
 listPositions :: Orientation -> Pos -> Int -> PosSet
 listPositions o p l = if l > 0 then insert p (listPositions o (nextPos o p) (l-1)) else empty
@@ -31,19 +28,3 @@ listPositions o p l = if l > 0 then insert p (listPositions o (nextPos o p) (l-1
 nextPos :: Orientation -> Pos -> Pos
 nextPos Horizontal (x,y) = ((x+1), y)
 nextPos Vertical   (x,y) = (x, (y+1))
-
-addHit :: Pos -> Vessel -> Vessel
-addHit s v = v {hits=insert s (hits v)}
-
-isHit :: Pos -> Vessel -> Bool
-isHit s v = elem s (positions v)
-
-listHits :: [Vessel] -> PosSet
-listHits [] = empty
-listHits (v:vs) = union (hits v) (listHits vs)
-
-allSunk :: [Vessel] -> Bool
-allSunk vs = all isSunk vs
-
-isSunk :: Vessel -> Bool
-isSunk v = (positions v) == (hits v)
