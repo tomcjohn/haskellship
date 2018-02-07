@@ -1,3 +1,6 @@
+# stack working dir
+.stack-work
+
 # vi autosave files
 *.swp
 
