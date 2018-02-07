@@ -41,7 +41,15 @@ createRow _  []     _ = []
 createRow vs (x:xs) y = createCell vs x y : createRow vs xs y
 
 createCell :: [PositionedVessel] -> Int -> Int -> Cell
-createCell vs x y = Cell NoVessel Miss
+createCell vs x y = Cell (hasVesselType x y vs) Miss
+
+-- TODO this is very wasteful as it does a full scan of the [PositionedVessel] for every cell on the gameboard - it'll do for now
+hasVesselType :: Int -> Int -> [PositionedVessel] -> VesselType
+hasVesselType _ _ [] = NoVessel
+hasVesselType x y (v:vs) =
+  if (x,y) `elem` positions v
+    then vesselType v
+    else hasVesselType x y vs
 
 buildVessels :: [Orientation -> Pos -> PositionedVessel] -> Pos -> Pos -> [PositionedVessel] -> IO [PositionedVessel]
 buildVessels [] _ _ acc = pure acc
