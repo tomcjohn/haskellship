@@ -1,15 +1,16 @@
 module GameBoard where
 
+import qualified Data.List as List
 import Orientation
 import Pos
 import Vessel
 
 data Cell = Cell
-  { vType::VesselType
-  , hType::HitType
+  { vesselType::VesselType
+  , hitType::HitType
   } deriving Show
 
-data HitType = Hit | Miss deriving Show
+data HitType = Hit | Miss | Empty deriving Show
 
 data GameBoard = GameBoard
   { bottomLeft::Pos
@@ -41,14 +42,14 @@ createRow _  []     _ = []
 createRow vs (x:xs) y = createCell vs x y : createRow vs xs y
 
 createCell :: [PositionedVessel] -> Int -> Int -> Cell
-createCell vs x y = Cell (hasVesselType x y vs) Miss
+createCell vs x y = Cell (hasVesselType x y vs) Empty
 
 -- TODO this is very wasteful as it does a full scan of the [PositionedVessel] for every cell on the gameboard - it'll do for now
 hasVesselType :: Int -> Int -> [PositionedVessel] -> VesselType
 hasVesselType _ _ [] = NoVessel
 hasVesselType x y (v:vs) =
   if (x,y) `elem` positions v
-    then vesselType v
+    then vType v
     else hasVesselType x y vs
 
 buildVessels :: [Orientation -> Pos -> PositionedVessel] -> Pos -> Pos -> [PositionedVessel] -> IO [PositionedVessel]
@@ -80,3 +81,38 @@ overlapsAny v1 (v2:vs) = overlapping || overlapsAny v1 vs
           let v1Pos = positions v1
           let v2Pos = positions v2
           not $ null $ intersection v1Pos v2Pos
+
+renderBoard :: GameBoard -> String
+renderBoard board@(GameBoard (x1,y1) (x2,y2) _) = do
+  let xs = [x1..x2]
+  let ys = reverse [y1..y2]
+  concat $ fmap (++ "\n") $ renderRows ys xs board ++ (finalRow xs)
+
+rowHeader :: [Int] -> String
+rowHeader range = "  =" ++ (concat $ replicate ((maximum range - minimum range) + 1) "====")
+
+renderRows :: [Int] -> [Int] -> GameBoard -> [String]
+renderRows [] _ _ = []
+renderRows (y:ys) xs board = do
+  renderRow y xs board ++ renderRows ys xs board
+
+renderRow :: Int -> [Int] -> GameBoard -> [String]
+renderRow y xs board = do
+  let rowBody = show y ++ " |" ++ renderCells y xs board
+  [rowHeader xs, rowBody]
+
+renderCells :: Int -> [Int] -> GameBoard -> String
+renderCells _ [] _ = ""
+renderCells y (x:xs) board =
+  renderCell (hitType((cells board)!!y!!x)) ++ renderCells y xs board
+
+renderCell :: HitType -> String
+renderCell ht = List.intercalate (toString ht) [" ", " |"]
+  where toString Hit   = "X"
+        toString Miss  = "-"
+        toString Empty = " "
+
+finalRow :: [Int] -> [String]
+finalRow xs =
+  let xIndexes = "   " ++ (concat $ fmap (\x -> " " ++ show x ++ "  ") xs)
+  in [rowHeader xs, xIndexes]

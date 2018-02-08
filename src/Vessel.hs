@@ -6,7 +6,7 @@ import Pos
 data VesselType = Carrier | Battleship | Cruiser | Submarine | Destroyer | NoVessel deriving Show
 
 data PositionedVessel = PositionedVessel
-  { vesselType::VesselType
+  { vType::VesselType
   , orientation::Orientation
   , positions::PosSet
   } deriving Show

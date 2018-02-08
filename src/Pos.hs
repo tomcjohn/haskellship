@@ -35,6 +35,9 @@ intParser = read <$> many1 digit
 empty :: PosSet
 empty = Set.empty
 
+fromList :: [Pos] -> PosSet
+fromList = Set.fromList
+
 elems :: PosSet -> [Pos]
 elems = Set.elems
 

@@ -11,4 +11,4 @@ main :: IO ()
 main = do
   putStrLn "Generating board ..."
   gb <- generateBoard
-  print gb
+  putStrLn $ renderBoard gb
