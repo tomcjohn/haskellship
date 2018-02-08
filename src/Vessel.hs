@@ -3,7 +3,7 @@ module Vessel where
 import Orientation
 import Pos
 
-data VesselType = Carrier | Battleship | Cruiser | Submarine | Destroyer | NoVessel deriving Show
+data VesselType = Carrier | Battleship | Cruiser | Submarine | Destroyer | NoVessel deriving (Eq, Show)
 
 data PositionedVessel = PositionedVessel
   { vType::VesselType

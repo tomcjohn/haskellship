@@ -1,8 +1,8 @@
 module Pos where
 
 import           Data.Set           (Set)
-import qualified Data.Set           as Set
-import qualified System.Random      as Rand
+import qualified Data.Set           as S
+import qualified System.Random      as R
 import           Text.Parsec
 import           Text.Parsec.String
 
@@ -17,9 +17,9 @@ randomPos (x1,y1) (x2,y2) = do
 
 randomNumber :: (Int, Int) -> IO Int
 randomNumber bounds = do
-  g <- Rand.getStdGen
-  let r = Rand.randomR bounds g
-  Rand.setStdGen $ snd r
+  g <- R.getStdGen
+  let r = R.randomR bounds g
+  R.setStdGen $ snd r
   pure $ fst r
 
 posParser :: Parser Pos
@@ -33,19 +33,19 @@ intParser :: Parser Int
 intParser = read <$> many1 digit
 
 empty :: PosSet
-empty = Set.empty
+empty = S.empty
 
 fromList :: [Pos] -> PosSet
-fromList = Set.fromList
+fromList = S.fromList
 
 elems :: PosSet -> [Pos]
-elems = Set.elems
+elems = S.elems
 
 insert :: Pos -> PosSet -> PosSet
-insert = Set.insert
+insert = S.insert
 
 union :: PosSet -> PosSet -> PosSet
-union = Set.union
+union = S.union
 
 intersection :: PosSet -> PosSet -> PosSet
-intersection = Set.intersection
+intersection = S.intersection

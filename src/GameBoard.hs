@@ -1,22 +1,29 @@
 module GameBoard where
 
-import qualified Data.List as List
+import qualified Data.List   as L
+import qualified Data.Vector as V
 import Orientation
 import Pos
 import Vessel
 
+data CellType = Hit | Miss | Empty deriving (Eq, Show)
+
 data Cell = Cell
   { vesselType::VesselType
-  , hitType::HitType
+  , cellType::CellType
   } deriving Show
-
-data HitType = Hit | Miss | Empty deriving Show
 
 data GameBoard = GameBoard
   { bottomLeft::Pos
   , topRight::Pos
   , cells::[[Cell]]
   } deriving Show
+
+data ShotResult =
+  OffBoard |
+  RepeatShot |
+  ShotHit GameBoard (Maybe VesselType) |
+  ShotMiss GameBoard
 
 generateBoard :: IO GameBoard
 generateBoard = do
@@ -103,11 +110,12 @@ renderRow y xs board = do
 
 renderCells :: Int -> [Int] -> GameBoard -> String
 renderCells _ [] _ = ""
-renderCells y (x:xs) board =
-  renderCell (hitType((cells board)!!y!!x)) ++ renderCells y xs board
+renderCells y (x:xs) board = do
+  let c = cell board (x,y)
+  renderCell c ++ renderCells y xs board
 
-renderCell :: HitType -> String
-renderCell ht = List.intercalate (toString ht) [" ", " |"]
+renderCell :: Cell -> String
+renderCell (Cell _ ht) = L.intercalate (toString ht) [" ", " |"]
   where toString Hit   = "X"
         toString Miss  = "-"
         toString Empty = " "
@@ -116,3 +124,44 @@ finalRow :: [Int] -> [String]
 finalRow xs =
   let xIndexes = "   " ++ (concat $ fmap (\x -> " " ++ show x ++ "  ") xs)
   in [rowHeader xs, xIndexes]
+
+onBoard :: Pos -> Pos -> Pos -> Bool
+onBoard (x1,y1) (x2,y2) (x,y) =
+  x >= x1 && x <= x2 && y >= y1 && y <= y2
+
+takeShot :: GameBoard -> Pos -> ShotResult
+takeShot board shot = do
+  let (Cell vt ht) = cell board shot
+  if not $ onBoard (bottomLeft board) (topRight board) shot
+    then
+      OffBoard
+  else if not (ht == Empty)
+    then
+      RepeatShot
+  else if vt == NoVessel
+    then
+      ShotMiss $ board {cells=replaceCell Miss shot (cells board)}
+  else
+      ShotHit (board {cells=replaceCell Hit shot (cells board)}) Nothing
+
+cell :: GameBoard -> Pos -> Cell
+cell board (x,y) = (cells board)!!y!!x
+
+-- TODO how can we determine gameover with only cells!!!
+gameOver :: GameBoard -> Bool
+gameOver board = False
+
+replaceCell :: CellType -> Pos -> [[Cell]] -> [[Cell]]
+replaceCell ct (x,y) rows = do
+  let row        = rows!!y
+  let preCells   = slice 0 x row
+  let postCells  = slice (x+1) (length row) row
+  let oldCell    = row!!x
+  let newRow     = preCells ++ (oldCell{cellType=ct} : postCells)
+  let rowsLength = length rows
+  let preRows    = slice 0 y rows
+  let postRows   = drop (y+1) . take rowsLength $ rows
+  preRows ++ (newRow : postRows)
+
+slice :: Int -> Int -> [a] -> [a]
+slice i n l = V.toList $ V.slice i n (V.fromList l)
