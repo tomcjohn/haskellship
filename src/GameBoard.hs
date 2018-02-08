@@ -2,9 +2,9 @@ module GameBoard where
 
 import qualified Data.List   as L
 import qualified Data.Vector as V
-import Orientation
-import Pos
-import Vessel
+import           Orientation
+import           Pos
+import           Vessel
 
 data CellType = Hit | Miss | Empty deriving (Eq, Show)
 
@@ -31,7 +31,6 @@ generateBoard = do
   let tR = (9,9)
   let vesselBuilders = [bldSubmarine, bldDestroyer, bldCruiser, bldCarrier, bldBattleship]
   vs <- buildVessels vesselBuilders bL tR []
-  print vs
   pure $ GameBoard bL tR $ createCells vs bL tR
 
 createCells :: [PositionedVessel] -> Pos -> Pos -> [[Cell]]
@@ -51,12 +50,12 @@ createRow vs (x:xs) y = createCell vs x y : createRow vs xs y
 createCell :: [PositionedVessel] -> Int -> Int -> Cell
 createCell vs x y = Cell (hasVesselType x y vs) Empty
 
--- TODO this is very wasteful as it does a full scan of the [PositionedVessel] for every cell on the gameboard - it'll do for now
+-- TODO this is a bit wasteful as it does a full scan of the PositionedVessels list for every cell on the gameboard ... but it'll do for now
 hasVesselType :: Int -> Int -> [PositionedVessel] -> VesselType
 hasVesselType _ _ [] = NoVessel
 hasVesselType x y (v:vs) =
   if (x,y) `elem` positions v
-    then vType v
+    then Vessel.vesselType v
     else hasVesselType x y vs
 
 buildVessels :: [Orientation -> Pos -> PositionedVessel] -> Pos -> Pos -> [PositionedVessel] -> IO [PositionedVessel]
@@ -142,14 +141,17 @@ takeShot board shot = do
     then
       ShotMiss $ board {cells=replaceCell Miss shot (cells board)}
   else
+      -- TODO How to stop returning 'Nothing' here in order to allow 'You sunk my ...' messages?
       ShotHit (board {cells=replaceCell Hit shot (cells board)}) Nothing
 
 cell :: GameBoard -> Pos -> Cell
 cell board (x,y) = (cells board)!!y!!x
 
--- TODO how can we determine gameover with only cells!!!
 gameOver :: GameBoard -> Bool
-gameOver board = False
+gameOver board = doIt $ concat $ cells board
+  where doIt []     = True
+        doIt (c:cs) = if unsunkCell c then False else doIt cs
+        unsunkCell (Cell vt ht) = not (vt == NoVessel) && not (ht == Hit)
 
 replaceCell :: CellType -> Pos -> [[Cell]] -> [[Cell]]
 replaceCell ct (x,y) rows = do

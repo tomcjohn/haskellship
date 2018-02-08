@@ -1,6 +1,7 @@
 module Main where
 
 import qualified System.Console.ANSI as C
+import System.IO
 import Text.Parsec
 
 import GameBoard
@@ -50,6 +51,7 @@ printSunk Nothing = pure ()
 
 main :: IO ()
 main = do
+  hSetBuffering stdout NoBuffering
   C.clearScreen
   putStrLn "Generating board ..."
   board <- generateBoard
