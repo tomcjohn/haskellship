@@ -1,4 +1,3 @@
 #!/bin/bash
 
-stack build
-stack exec haskellship
+stack build && stack exec haskellship

@@ -92,14 +92,14 @@ renderBoard :: GameBoard -> String
 renderBoard board@(GameBoard (x1,y1) (x2,y2) _) = do
   let xs = [x1..x2]
   let ys = reverse [y1..y2]
-  concat $ fmap (++ "\n") $ renderRows ys xs board ++ (finalRow xs)
+  unlines (renderRows ys xs board ++ finalRow xs)
 
 rowHeader :: [Int] -> String
-rowHeader range = "  =" ++ (concat $ replicate ((maximum range - minimum range) + 1) "====")
+rowHeader range = "  =" ++ concat (replicate ((maximum range - minimum range) + 1) "====")
 
 renderRows :: [Int] -> [Int] -> GameBoard -> [String]
 renderRows [] _ _ = []
-renderRows (y:ys) xs board = do
+renderRows (y:ys) xs board =
   renderRow y xs board ++ renderRows ys xs board
 
 renderRow :: Int -> [Int] -> GameBoard -> [String]
@@ -121,7 +121,7 @@ renderCell (Cell _ ht) = L.intercalate (toString ht) [" ", " |"]
 
 finalRow :: [Int] -> [String]
 finalRow xs =
-  let xIndexes = "   " ++ (concat $ fmap (\x -> " " ++ show x ++ "  ") xs)
+  let xIndexes = "   " ++ concatMap (\x -> " " ++ show x ++ "  ") xs
   in [rowHeader xs, xIndexes]
 
 onBoard :: Pos -> Pos -> Pos -> Bool
@@ -134,7 +134,7 @@ takeShot board shot = do
   if not $ onBoard (bottomLeft board) (topRight board) shot
     then
       OffBoard
-  else if not (ht == Empty)
+  else if ht /= Empty
     then
       RepeatShot
   else if vt == NoVessel
@@ -145,13 +145,13 @@ takeShot board shot = do
       ShotHit (board {cells=replaceCell Hit shot (cells board)}) Nothing
 
 cell :: GameBoard -> Pos -> Cell
-cell board (x,y) = (cells board)!!y!!x
+cell board (x,y) = cells board!!y!!x
 
 gameOver :: GameBoard -> Bool
 gameOver board = doIt $ concat $ cells board
   where doIt []     = True
-        doIt (c:cs) = if unsunkCell c then False else doIt cs
-        unsunkCell (Cell vt ht) = not (vt == NoVessel) && not (ht == Hit)
+        doIt (c:cs) = not (unsunkCell c) && doIt cs
+        unsunkCell (Cell vt ht) = vt /= NoVessel && ht /= Hit
 
 replaceCell :: CellType -> Pos -> [[Cell]] -> [[Cell]]
 replaceCell ct (x,y) rows = do

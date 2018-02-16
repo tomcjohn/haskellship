@@ -23,7 +23,8 @@ bldDestroyer :: Orientation -> Pos -> PositionedVessel
 bldDestroyer o p = PositionedVessel Destroyer o (listPositions o p 2)
 
 listPositions :: Orientation -> Pos -> Int -> PosSet
-listPositions o p l = if l > 0 then insert p (listPositions o (nextPos o p) (l-1)) else empty
+listPositions o p l =
+  if l > 0 then insert p (listPositions o (nextPos o p) (l-1)) else empty
 
 nextPos :: Orientation -> Pos -> Pos
 nextPos Horizontal (x,y) = ((x+1), y)

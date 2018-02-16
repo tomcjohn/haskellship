@@ -12,5 +12,8 @@
 # idea project dir
 .idea
 
+# vscode project dir
+.vscode
+
 # code tags files
 TAGS
